@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:movie_watchlist_app/home_screen/home_screen.dart';
+import 'package:movie_watchlist_app/homescreen/home_screen.dart';
 import 'package:movie_watchlist_app/login/login_screen.dart';
-import 'package:movie_watchlist_app/main.dart';
 import 'package:movie_watchlist_app/signup/signup_screen.dart';
 import 'package:movie_watchlist_app/splash/splash_screen.dart';
 import 'package:page_transition/page_transition.dart';

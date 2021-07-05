@@ -18,6 +18,6 @@ class ApiConstants{
   static const String API_KEY = "09ab17ecc38aa58012fb3e67057880f4";
 
   static const String trendingUrl = "trending/movie/day?api_key=";
-  static const String popularUrl = "popular/movie/day?api_key=";
-  static const String upcomingUrl = "upcoming/movie/day?api_key=";
+  static const String tvCarouselUrl = "trending/tv/day?api_key=";
+  static const String popularUrl = "movie/popular?api_key=";
 }

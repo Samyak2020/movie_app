@@ -8,6 +8,7 @@ class MovieModel {
   String releaseDate;
   int voteCount;
   String title;
+  String name;
   bool adult;
   String backdropPath;
   String overview;
@@ -25,6 +26,7 @@ class MovieModel {
         this.releaseDate,
         this.voteCount,
         this.title,
+        this.name,
         this.adult,
         this.backdropPath,
         this.overview,
@@ -42,6 +44,7 @@ class MovieModel {
     releaseDate = json['release_date'];
     voteCount = json['vote_count'];
     title = json['title'];
+    name = json['name'];
     adult = json['adult'];
     backdropPath = json['backdrop_path'];
     overview = json['overview'];
@@ -61,6 +64,7 @@ class MovieModel {
     data['release_date'] = this.releaseDate;
     data['vote_count'] = this.voteCount;
     data['title'] = this.title;
+    data['name'] = this.name;
     data['adult'] = this.adult;
     data['backdrop_path'] = this.backdropPath;
     data['overview'] = this.overview;

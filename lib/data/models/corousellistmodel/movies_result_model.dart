@@ -1,4 +1,4 @@
-import 'package:movie_watchlist_app/data/models/movie_model.dart';
+import 'movie_model.dart';
 
 class MovieResultModel {
   int page;
