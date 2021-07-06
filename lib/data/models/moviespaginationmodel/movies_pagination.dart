@@ -1,3 +1,5 @@
+import 'package:movie_watchlist_app/data/models/cast_list_model.dart';
+
 class MoviesPagination {
   int page;
   List<MoviesPaginationList> results;
@@ -42,10 +44,12 @@ class MoviesPaginationList {
   double popularity;
   String posterPath;
   String releaseDate;
+  String trailerId;
   String title;
   bool video;
   double voteAverage;
   int voteCount;
+  List<CastList> cast;
 
   MoviesPaginationList(
       {this.adult,
@@ -54,6 +58,7 @@ class MoviesPaginationList {
         this.id,
         this.originalLanguage,
         this.originalTitle,
+        this.trailerId,
         this.overview,
         this.popularity,
         this.posterPath,

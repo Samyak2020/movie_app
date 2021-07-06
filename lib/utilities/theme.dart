@@ -12,7 +12,7 @@ ThemeData appTheme(){
       subtitle1:base.subtitle1.copyWith(
         fontSize: 18,
         fontWeight: FontWeight.bold,
-        color: AppColors.primiaryWhite,
+        color: AppColors.secondWhite,
       ),
       headline2: base.headline2.copyWith(
         fontSize: 24,
@@ -22,12 +22,12 @@ ThemeData appTheme(){
       subtitle2:base.subtitle2.copyWith(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: AppColors.secondWhite,
+        color: AppColors.grey,
       ),
       bodyText1:base.bodyText1.copyWith(
-        fontSize: 12,
+        fontSize: 16,
         fontWeight: FontWeight.w400,
-        color: AppColors.secondWhite,
+        color: AppColors.grey,
       ),
     );
   }

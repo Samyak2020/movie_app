@@ -1,3 +1,7 @@
+import 'package:movie_watchlist_app/data/models/trailer_model.dart';
+
+import '../cast_list_model.dart';
+
 class MovieModel {
   String originalLanguage;
   String originalTitle;
@@ -9,12 +13,15 @@ class MovieModel {
   int voteCount;
   String title;
   String name;
+  String fistAirDate;
   bool adult;
   String backdropPath;
   String overview;
   List<int> genreIds;
   double popularity;
   String mediaType;
+  List<CastList> cast;
+  String trailerId;
 
   MovieModel(
       {this.originalLanguage,
@@ -27,12 +34,15 @@ class MovieModel {
         this.voteCount,
         this.title,
         this.name,
+        this.fistAirDate,
         this.adult,
         this.backdropPath,
         this.overview,
         this.genreIds,
         this.popularity,
-        this.mediaType});
+        this.mediaType,
+        this.trailerId,
+      });
 
   MovieModel.fromJson(Map<String, dynamic> json) {
     originalLanguage = json['original_language'];
@@ -45,6 +55,7 @@ class MovieModel {
     voteCount = json['vote_count'];
     title = json['title'];
     name = json['name'];
+    fistAirDate = json['first_air_date'];
     adult = json['adult'];
     backdropPath = json['backdrop_path'];
     overview = json['overview'];
@@ -64,6 +75,7 @@ class MovieModel {
     data['release_date'] = this.releaseDate;
     data['vote_count'] = this.voteCount;
     data['title'] = this.title;
+    data['first_air_date'] = this.fistAirDate;
     data['name'] = this.name;
     data['adult'] = this.adult;
     data['backdrop_path'] = this.backdropPath;

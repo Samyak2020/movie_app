@@ -25,6 +25,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: appTheme(),
       initialRoute: ScreenName.HomeScreen,
+      //initialRoute: ScreenName.DetailsScreen,
      onGenerateRoute: RouteGenerator.generateRoute,
     );
   }

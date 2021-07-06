@@ -18,8 +18,9 @@ class BaseRepo{
     }
   }
 
-  dynamic getPaginatedItems(String url, int pageNo) async {
-    final response = await http.get(Uri.parse('${ApiConstants.BASE_URL}$url${ApiConstants.API_KEY}&page=$pageNo'),
+
+  dynamic getCasts(int movieId) async {
+    final response = await http.get(Uri.parse('https://api.themoviedb.org/3/movie/$movieId/credits?api_key=${ApiConstants.API_KEY}'),
       headers: {
         'Content-Type' : 'application/json'
       },
@@ -31,4 +32,16 @@ class BaseRepo{
     }
   }
 
+  dynamic getTrailers(int movieId) async {
+    final response = await http.get(Uri.parse('https://api.themoviedb.org/3/movie/$movieId/videos?api_key=${ApiConstants.API_KEY}'),
+      headers: {
+        'Content-Type' : 'application/json'
+      },
+    );
+    if(response.statusCode == 200){
+      return json.decode(response.body);
+    }else{
+      throw Exception("ERROR REASON IS THIS ${response.reasonPhrase}");
+    }
+  }
 }

@@ -1,3 +1,4 @@
+import 'package:movie_watchlist_app/data/models/cast_list_model.dart';
 import 'package:movie_watchlist_app/data/models/corousellistmodel/movie_model.dart';
 import 'package:movie_watchlist_app/data/models/corousellistmodel/movies_result_model.dart';
 import 'package:movie_watchlist_app/data/repo/base_repo.dart';
