@@ -1,7 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:movie_watchlist_app/data/models/trailer_model.dart';
+import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_castlist.dart';
+import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_trailer.dart';
+import 'package:movie_watchlist_app/detailsscreen/details_screen.dart';
 import 'package:movie_watchlist_app/homescreen/home_screen.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
+import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
 
 class WatchlistScreen extends StatefulWidget {
   const WatchlistScreen();
@@ -63,84 +68,103 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                 color:AppColors.red,),
               ),
             ),
-            Stack(
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(
-                              screenSize.width * 0.045,
-                              screenSize.height * 0.04,
-                              screenSize.width * 0.025,
-                              2.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(15),
-                            child: CachedNetworkImage(
-                              height: screenSize.height / 4.5,
-                              width: screenSize.width / 3,
-                              imageUrl: 'assets/images/img_not_found.jpg',
-                              fit: BoxFit.cover,
+            GestureDetector(
+              onTap: () async{
+          //       await castListRepository.fetchCastsList(popularMovies.id);
+          //       List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
+          //       // String trailerId = await trailerListRepository.fetchTrailersId(popularMovies.id);
+          //
+          // if( popularMovies.trailerId != null){
+          //   popularMovies.trailerId = trailerId.first.key;
+          //   Navigator.push(context, MaterialPageRoute(builder: (context){
+          //     return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,trailerId: popularMovies.trailerId,isTrailerIdNull: false,);
+          //   }));
+          // }else{
+          //   ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
+          //   Navigator.push(context, MaterialPageRoute(builder: (context){
+          //     return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,isTrailerIdNull: true,);
+          //   }));
+          // }
+          },
+              child: Stack(
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(
+                                screenSize.width * 0.045,
+                                screenSize.height * 0.04,
+                                screenSize.width * 0.025,
+                                2.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: CachedNetworkImage(
+                                height: screenSize.height / 4.5,
+                                width: screenSize.width / 3,
+                                imageUrl: 'assets/images/img_not_found.jpg',
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.only(right:screenSize.width * 0.06,),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Movie Name",
-                                  //  popularMovies.voteAverage.toString(),
-                                  style: theme.textTheme.subtitle1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  "Movie Name",
-                                  //  popularMovies.voteAverage.toString(),
-                                  style: theme.textTheme.subtitle2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                SizedBox(height: screenSize.height * 0.01),
-                                Text(
-                                  //widget.movieModel.title ?? widget.moviesPaginationList.title ?? "",
-                                  // widget.isMovieModel
-                                  //     ? widget.movieModel.overview
-                                  //     : widget.moviesPaginationList.overview,
-                                  "OVERview sjafhas bjasfj ajlf lksabfjk asbjf bsalfbla bjfb jbs jkasb fjkasjglj aiohifjj lkahkfasj fhakb jflasbfou iahfjalsbfk jasbf hajsbf lakbsk fja0,",
-                                  style: theme.textTheme.bodyText1,
-                                  textAlign: TextAlign.left,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                SizedBox(height: screenSize.height * 0.01),
-                                Row(
-                                  children: [
-                                    Icon(Icons.star, color: AppColors.yellow,
-                                      size: 18.0,
-                                    ),
-                                    Container(
-                                      padding: EdgeInsets.only(left: 5.0),
-                                      child: Text(
-                                        // person//     .knowForDepartment
-                                       // popularMovies.voteAverage.toString(),
-                                        "Rating",
-                                        style: theme.textTheme.subtitle2.copyWith(
-                                            color:  AppColors.secondWhite),
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(right:screenSize.width * 0.15),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Movie Name",
+                                    //  popularMovies.voteAverage.toString(),
+                                    style: theme.textTheme.subtitle1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    "Movie Name",
+                                    //  popularMovies.voteAverage.toString(),
+                                    style: theme.textTheme.subtitle2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  SizedBox(height: screenSize.height * 0.01),
+                                  Text(
+                                    //widget.movieModel.title ?? widget.moviesPaginationList.title ?? "",
+                                    // widget.isMovieModel
+                                    //     ? widget.movieModel.overview
+                                    //     : widget.moviesPaginationList.overview,
+                                    "OVERview sjafhas bjasfj ajlf lksabfjk asbjf bsalfbla bjfb jbs jkasb fjkasjglj aiohifjj lkahkfasj fhakb jflasbfou iahfjalsbfk jasbf hajsbf lakbsk fja0,",
+                                    style: theme.textTheme.bodyText1,
+                                    textAlign: TextAlign.left,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  SizedBox(height: screenSize.height * 0.012),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.star, color: AppColors.yellow,
+                                        size: 18.0,
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: screenSize.height * 0.02),
-                              ],
+                                      Container(
+                                        padding: EdgeInsets.only(left: 5.0),
+                                        child: Text(
+                                          // person//     .knowForDepartment
+                                         // popularMovies.voteAverage.toString(),
+                                          "Rating",
+                                          style: theme.textTheme.subtitle2.copyWith(
+                                              color:  AppColors.secondWhite),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: screenSize.height * 0.02),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ]
-                  ),
-                ]
+                        ]
+                    ),
+                  ]
+              ),
             ),
           ]
         );

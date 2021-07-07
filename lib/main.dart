@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:movie_watchlist_app/data/repo/home_repos/search_example.dart';
+import 'package:movie_watchlist_app/searchScreen/search_screen.dart';
 import 'package:movie_watchlist_app/splash/splash_screen.dart';
 import 'package:movie_watchlist_app/utilities/constants.dart';
 import 'package:movie_watchlist_app/utilities/routes.dart';
@@ -27,6 +29,8 @@ class MyApp extends StatelessWidget {
       initialRoute: ScreenName.HomeScreen,
       //initialRoute: ScreenName.WatchlistScreen,
       //initialRoute: ScreenName.DetailsScreen,
+     // home: SearchBarDemoHome(),
+     // home: SearchScreen(),
      onGenerateRoute: RouteGenerator.generateRoute,
     );
   }

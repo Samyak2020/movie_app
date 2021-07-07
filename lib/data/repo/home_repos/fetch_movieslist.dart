@@ -1,6 +1,6 @@
 import 'package:movie_watchlist_app/data/models/movieslistmodels/popular_movies_model.dart';
 import 'package:movie_watchlist_app/data/repo/base_repo.dart';
-import 'package:movie_watchlist_app/homescreen/home_screen_bloc.dart';
+import 'package:movie_watchlist_app/bloc/bloc_collection.dart';
 import 'package:movie_watchlist_app/utilities/constants.dart';
 
 

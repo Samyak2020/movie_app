@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:movie_watchlist_app/homescreen/home_screen.dart';
 import 'package:movie_watchlist_app/login/login_screen.dart';
+import 'package:movie_watchlist_app/searchScreen/search_screen.dart';
 import 'package:movie_watchlist_app/signup/signup_screen.dart';
 import 'package:movie_watchlist_app/splash/splash_screen.dart';
 import 'package:movie_watchlist_app/watchlist/watchlist_screen.dart';
@@ -50,7 +51,7 @@ class RouteGenerator{
         return MaterialPageRoute(builder: (_)=> WatchlistScreen());
 
       case ScreenName.SearchScreen:
-        return MaterialPageRoute(builder: (_)=> SplashScreen());
+        return MaterialPageRoute(builder: (_)=> SearchScreen());
 
     }
   }

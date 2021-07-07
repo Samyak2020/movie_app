@@ -7,12 +7,14 @@ import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_trailer.dart';
 import 'package:movie_watchlist_app/data/repo/home_repos/fetch_carousel_movies.dart';
 import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_castlist.dart';
 import 'package:movie_watchlist_app/data/repo/home_repos/fetch_movieslist.dart';
+import 'package:movie_watchlist_app/data/repo/search_repo.dart';
 import 'package:rxdart/rxdart.dart';
 
-class HomeScreenBloc extends BaseBloc {
+class BlocCollection extends BaseBloc {
   final trendingMoviesController = BehaviorSubject<List<MovieModel>>();
   final popularMoviesController = BehaviorSubject<List<MoviesPaginationList>>();
   final topRatedMoviesController = BehaviorSubject<List<MoviesPaginationList>>();
+  final searchMoviesController = BehaviorSubject<List<MoviesPaginationList>>();
   final tvController = BehaviorSubject<List<MovieModel>>();
   final showSelectedCategoryController = BehaviorSubject<List<MovieModel>>();
   final castListController = BehaviorSubject<List<Cast>>();
@@ -21,6 +23,7 @@ class HomeScreenBloc extends BaseBloc {
   Stream<List<MovieModel>> get trendingMoviesResponseStream => trendingMoviesController.stream;
   Stream<List<MoviesPaginationList>> get popularMoviesResponseStream => popularMoviesController.stream;
   Stream<List<MoviesPaginationList>> get topRatedMoviesResponseStream => topRatedMoviesController.stream;
+  Stream<List<MoviesPaginationList>> get searchMoviesResponseStream => searchMoviesController.stream;
   Stream<List<MovieModel>> get tvResponseStream => tvController.stream;
   Stream<List<MovieModel>> get showSelectedCategoryControllerStream => showSelectedCategoryController.stream;
   Stream<List<Cast>> get castListResponseStream => castListController.stream;
@@ -29,6 +32,7 @@ class HomeScreenBloc extends BaseBloc {
   Function(List<MovieModel>) get addTrendingMoviesResponseToStream => trendingMoviesController.sink.add;
   Function(List<MoviesPaginationList>) get addPopularMoviesResponseToStream => popularMoviesController.sink.add;
   Function(List<MoviesPaginationList>) get addTopRatedMoviesResponseToStream => topRatedMoviesController.sink.add;
+  Function(List<MoviesPaginationList>) get addsearchMoviesResponseToStream => searchMoviesController.sink.add;
   Function(List<MovieModel>) get addTvResponseToStream => tvController.sink.add;
   Function(List<MovieModel>) get addShowSelectedCategoryToStream => showSelectedCategoryController.sink.add;
   Function(List<Cast>) get addCastListToStream => castListController.sink.add;
@@ -65,6 +69,12 @@ class HomeScreenBloc extends BaseBloc {
     addTrailerListToStream(trailers);
   }
 
+  fetchSearchMovies({String searchQuery = ""}) async{
+    List<MoviesPaginationList> movies =  await searchMoviesRepository.fetchSearchQuery(searchQuery);
+    print("Search query at Bloc $movies");
+    addsearchMoviesResponseToStream(movies);
+  }
+
 
   @override
   void dispose() {
@@ -76,6 +86,7 @@ class HomeScreenBloc extends BaseBloc {
     showSelectedCategoryController.close();
     castListController.close();
     trailerListController.close();
+    searchMoviesController.close();
   }
 }
-final HomeScreenBloc homeScreenBloc = HomeScreenBloc();
+final BlocCollection homeScreenBloc = BlocCollection();

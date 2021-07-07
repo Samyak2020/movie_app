@@ -7,13 +7,14 @@ import 'package:flutter/widgets.dart';
 import 'package:movie_watchlist_app/data/models/cast_list_model.dart';
 import 'package:movie_watchlist_app/data/models/corousellistmodel/movie_model.dart';
 import 'package:movie_watchlist_app/data/models/movieslistmodels/popular_movies_model.dart';
-import 'package:movie_watchlist_app/homescreen/home_screen_bloc.dart';
+import 'package:movie_watchlist_app/bloc/bloc_collection.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
+import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DetailsScreen extends StatefulWidget {
 
-  DetailsScreen({this.isMovieModel, this.moviesPaginationList, this.movieModel,  this.movieId,this.title, this.releaseDate,this.trailerId});
+  DetailsScreen({this.isMovieModel, this.moviesPaginationList, this.movieModel,  this.movieId,this.title, this.releaseDate,this.trailerId, this.isTrailerIdNull = false});
 
   MovieModel movieModel;
   MoviesPaginationList moviesPaginationList;
@@ -22,6 +23,7 @@ class DetailsScreen extends StatefulWidget {
   String title;
   String releaseDate;
   String trailerId;
+  bool isTrailerIdNull;
 
   @override
   _DetailsScreenState createState() => _DetailsScreenState();
@@ -159,13 +161,21 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ),
             Positioned(
               top:  screenSize.height / 5.6,
-              left: screenSize.width / 2.4,
+              left: screenSize.width / 2.3,
               child: GestureDetector(
                 onTap: () async {
-                  _launched = _launchInBrowser(
-                      _youtubeUrlConstant + widget.trailerId);
+                  if(widget.isTrailerIdNull != true){
+                    _launched = _launchInBrowser(
+                        _youtubeUrlConstant + widget.trailerId);
+                  }else{
+                    ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
+                  }
                 },
-                child: Icon(
+                child: widget.isTrailerIdNull ? Icon(
+                  Icons.browser_not_supported_rounded,
+                  color: AppColors.white,
+                  size: 80,
+                ):Icon(
                   Icons.play_circle_outline,
                   color: AppColors.white,
                   size: 80,
@@ -194,7 +204,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     children: <Widget>[
                       Center(
                         child: Padding(
-                          padding: EdgeInsets.all(8.0),
+                          padding: EdgeInsets.symmetric(vertical: screenSize.height * 0.025, horizontal: screenSize.width * 0.05),
                           child: Text(
                             //widget.movieModel.title ?? widget.moviesPaginationList.title ?? "",
                             widget.isMovieModel ? widget.title : widget
@@ -262,7 +272,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 0),
+                        padding: EdgeInsets.fromLTRB(16.0, screenSize.width * 0.1, 16.0, 0),
                         child: Text(
                           //widget.movieModel.title ?? widget.moviesPaginationList.title ?? "",
                           "Summary",
@@ -272,7 +282,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 0),
+                        padding: EdgeInsets.fromLTRB(screenSize.width * 0.06, 10.0, screenSize.width * 0.05, 0),
                         child: Text(
                           //widget.movieModel.title ?? widget.moviesPaginationList.title ?? "",
                           widget.isMovieModel
@@ -316,7 +326,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
           List<Cast> castList = snapshot.data;
           return snapshot.connectionState == ConnectionState.waiting ?
           CircularProgressIndicator() : Container(
-            padding: EdgeInsets.only(left: screenSize.width * 0.03),
+            padding: EdgeInsets.only(left: screenSize.width * 0.04),
             height: screenSize.height * 0.4,
             child: ListView.builder(
                 padding: EdgeInsets.zero,

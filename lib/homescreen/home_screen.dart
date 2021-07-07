@@ -12,9 +12,12 @@ import 'package:movie_watchlist_app/data/models/trailer_model.dart';
 import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_castlist.dart';
 import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_trailer.dart';
 import 'package:movie_watchlist_app/detailsscreen/details_screen.dart';
-import 'package:movie_watchlist_app/homescreen/home_screen_bloc.dart';
+import 'package:movie_watchlist_app/bloc/bloc_collection.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
 import 'package:movie_watchlist_app/utilities/constants.dart';
+import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
+
+
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -25,7 +28,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool isTrendingSelected = true;
   bool isHomeScreen = true;
-  //MoviesRepository moviesRepository = MoviesRepository();
+
+
 
 
   @override
@@ -58,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
               color: AppColors.white,
             ),
             onPressed: () {
+              Navigator.of(context).pushNamed(ScreenName.SearchScreen);
             },
           ),
         ],
@@ -124,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: screenSize.width * 0.06,
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.05,),
+                padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.035,),
                 child: Text("Popular",
                   style: theme.textTheme.subtitle2.copyWith(
                       fontSize:  16 ,
@@ -143,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: screenSize.width * 0.06,
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.05,),
+                padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.035,),
                 child: Text("Top Rated",
                   style: theme.textTheme.subtitle2.copyWith(
                       fontSize:  16 ,
@@ -187,18 +192,62 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               GestureDetector(
                                 onTap : () async{
+                                  // await castListRepository.fetchCastsList(i.id);
+                                  // List<Trailer> trailerId = await trailerListRepository.fetchTrailers(i.id);
+                                  // i.trailerId = trailerId.first.key;
+                                  // Navigator.push(context, MaterialPageRoute(builder: (context){
+                                  //   return DetailsScreen(isMovieModel: true,
+                                  //     movieModel: i,
+                                  //     title: isTrendingSelected ? i.title :  i.name,
+                                  //   releaseDate: isTrendingSelected ? i.releaseDate :  i.fistAirDate,
+                                  //     movieId: i.id,
+                                  //       trailerId: i.trailerId
+                                  //   );
+                                  // }));
+
                                   await castListRepository.fetchCastsList(i.id);
                                   List<Trailer> trailerId = await trailerListRepository.fetchTrailers(i.id);
-                                  i.trailerId = trailerId.first.key;
-                                  Navigator.push(context, MaterialPageRoute(builder: (context){
-                                    return DetailsScreen(isMovieModel: true,
-                                      movieModel: i,
-                                      title: isTrendingSelected ? i.title :  i.name,
-                                    releaseDate: isTrendingSelected ? i.releaseDate :  i.fistAirDate,
-                                      movieId: i.id,
-                                        trailerId: i.trailerId
-                                    );
-                                  }));
+                                  if(trailerId != null){
+                                    i.trailerId = trailerId.first.key;
+                                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                                      return DetailsScreen(isMovieModel: true,
+                                          movieModel: i,
+                                          title: isTrendingSelected ? i.title :  i.name,
+                                          releaseDate: isTrendingSelected ? i.releaseDate :  i.fistAirDate,
+                                          movieId: i.id,
+                                          trailerId: i.trailerId,
+                                        isTrailerIdNull: false,
+                                      );
+                                    }));
+                                  }else{
+                                    ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
+                                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                                      return DetailsScreen(isMovieModel: true,
+                                          movieModel: i,
+                                          title: isTrendingSelected ? i.title :  i.name,
+                                          releaseDate: isTrendingSelected ? i.releaseDate :  i.fistAirDate,
+                                          movieId: i.id,
+                                          trailerId: i.trailerId,
+                                          isTrailerIdNull: true,
+                                      );
+                                    }));
+                                  }
+
+
+                                  // await castListRepository.fetchCastsList(i.id);
+                                  // List<Trailer> trailerId = await trailerListRepository.fetchTrailers(i.id);
+                                  // if( i.trailerId != null){
+                                  //   i.trailerId = trailerId.first.key;
+                                  //   Navigator.push(context, MaterialPageRoute(builder: (context){
+                                  //     return DetailsScreen(isMovieModel: true,movieId: i.id,trailerId: i.trailerId,isTrailerIdNull: false,);
+                                  //   }));
+                                  // }else{
+                                  //   ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
+                                  //   Navigator.push(context, MaterialPageRoute(builder: (context){
+                                  //     return DetailsScreen(isMovieModel: true,movieId: i.id,isTrailerIdNull: true,);
+                                  //   }));
+                                  // }
+
                                 },
                                 child: Stack(
                                   alignment: Alignment.bottomLeft,
@@ -294,11 +343,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap : () async{
                           await castListRepository.fetchCastsList(popularMovies.id);
                           List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
-                         // String trailerId = await trailerListRepository.fetchTrailersId(popularMovies.id);
-                          popularMovies.trailerId = trailerId.first.key;
-                          Navigator.push(context, MaterialPageRoute(builder: (context){
-                            return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,trailerId: popularMovies.trailerId,);
-                          }));
+                          // String trailerId = await trailerListRepository.fetchTrailersId(popularMovies.id);
+                          if( popularMovies.trailerId != null){
+                            popularMovies.trailerId = trailerId.first.key;
+                            Navigator.push(context, MaterialPageRoute(builder: (context){
+                              return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,trailerId: popularMovies.trailerId,isTrailerIdNull: false,);
+                            }));
+                          }else{
+                            ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
+                            Navigator.push(context, MaterialPageRoute(builder: (context){
+                              return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,isTrailerIdNull: true,);
+                            }));
+                          }
+
                         },
                         child: Stack(
                           children: [
@@ -432,7 +489,6 @@ class _HomeScreenState extends State<HomeScreen> {
         stream: stream,
         builder: (context, snapshot){
           List<MoviesPaginationList> movies = snapshot.data;
-          print(movies);
           return snapshot.connectionState == ConnectionState.waiting ?
           CircularProgressIndicator():
           Container(
@@ -451,10 +507,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           await castListRepository.fetchCastsList(popularMovies.id);
                           List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
                          // String trailerId = await trailerListRepository.fetchTrailersId(popularMovies.id);
-                          popularMovies.trailerId = trailerId.first.key;
-                          Navigator.push(context, MaterialPageRoute(builder: (context){
-                            return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,trailerId: popularMovies.trailerId,);
-                          }));
+                          if( popularMovies.trailerId != null){
+                            popularMovies.trailerId = trailerId.first.key;
+                            Navigator.push(context, MaterialPageRoute(builder: (context){
+                              return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,trailerId: popularMovies.trailerId,isTrailerIdNull: false,);
+                            }));
+                          }else{
+                            ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
+                            Navigator.push(context, MaterialPageRoute(builder: (context){
+                              return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,isTrailerIdNull: true,);
+                            }));
+                          }
+
                         },
                         child: Stack(
                           children: [
