@@ -5,6 +5,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:movie_watchlist_app/data/models/corousellistmodel/movie_model.dart';
 import 'package:movie_watchlist_app/data/models/moviespaginationmodel/movies_pagination.dart';
 import 'package:movie_watchlist_app/data/models/trailer_model.dart';
@@ -23,6 +24,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
 
   bool isTrendingSelected = true;
+  bool isHomeScreen = true;
   //MoviesRepository moviesRepository = MoviesRepository();
 
 
@@ -59,52 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Container(
-              color: AppColors.black,
-            ),
-            Expanded(
-              child: Container(
-                // color: AppColors.black,
-                decoration: BoxDecoration(
-                  color: AppColors.black,
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: <Color>[
-                      Color(0xffAA70F4).withOpacity(0.15),
-                      AppColors.black.withOpacity(0),
-                    ],
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Column(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: Colors.transparent,
-                          radius: 50,
-                          child: ClipOval(
-                              child: Image(
-                                  fit: BoxFit.cover,
-                                  height: screenSize.height * 0.25,
-                                  width: screenSize.width * 0.25,
-                                  image: AssetImage("assets/userimage.jpg"))
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ]
-        ),
-      ),
+      drawer: buildDrawer(screenSize, theme,context, isHomeScreen),
       body: ListView(
         children: [
           Column(
@@ -447,7 +404,89 @@ class _HomeScreenState extends State<HomeScreen> {
         }
     );
   }
-
-
 }
+Drawer buildDrawer(Size screenSize, ThemeData theme, BuildContext context, bool isHomeScreen) {
+  return Drawer(
+    child: Container(
+      decoration: BoxDecoration(
+        color: AppColors.black,
+      ),
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          SizedBox(height: screenSize.height * 0.05),
+          Align(
+            alignment: Alignment.centerRight,
+              child: IconButton(icon:
+              Icon(Icons.arrow_back_ios,
+                color:AppColors.white,),
+                onPressed: () => Navigator.pop(context),
+              ),
+          ),
 
+          SizedBox(height: screenSize.height * 0.075),
+          Padding(
+            padding: EdgeInsets.only(left: screenSize.width * 0.035),
+            child: Text('Logged in as,',
+              style: theme.textTheme.subtitle2
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(screenSize.width * 0.035,8.0,0,screenSize.height * 0.05),
+            child: Text('User logged in info',
+              style: theme.textTheme.headline2,
+            ),
+          ),
+          Container(
+            //  width: screenSize.width * 0.01,
+            width: 5,
+            height: 1.0,
+            color: AppColors.grey,
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: screenSize.height * 0.05),
+            child: ListTile(
+              title: Text('Home',
+                style: theme.textTheme.subtitle1),
+              onTap: () {
+                isHomeScreen ? Navigator.pop(context) : Navigator.of(context).pushNamed(ScreenName.HomeScreen);
+                // Update the state of the app
+                // ...s
+                // Then close the drawer
+              },
+            ),
+          ),
+          SizedBox(height: screenSize.height * 0.03),
+          ListTile(
+            title: Text("Watch List",
+              style: theme.textTheme.subtitle1),
+            onTap: () {
+              isHomeScreen ?  Navigator.of(context).pushNamed(ScreenName.WatchlistScreen): Navigator.pop(context);
+            },
+          ),
+          SizedBox(height: screenSize.height * 0.05),
+          Container(
+            padding: EdgeInsets.symmetric(vertical: screenSize.height * 0.04,),
+            //  width: screenSize.width * 0.01,
+            width: 5,
+            height: 1.0,
+            color: AppColors.grey,
+          ),
+          SizedBox(height: screenSize.height * 0.075),
+          ListTile(
+            title: Text("Logout",
+              style: theme.textTheme.subtitle1.copyWith(
+                  color:  AppColors.red),),
+            trailing: Icon(Icons.logout, color:AppColors.red,),
+            onTap: () {
+              // Update the state of the app
+              // ...
+              // Then close the drawer
+             // Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}

@@ -10,7 +10,7 @@ class AppColors {
   static final pink = Color(0xffFC54FF);
   static final blue = Color(0xff7E6BEE);
   static final grey = Color(0xffAFAFAF);
-  static final red = Color(0xffEB5757);
+  static final red = Color(0xffB50001);
   static final yellow  = Color(0xffF4DD0C);
   static final linearPurple  = Color(0xffAA70F4)..withOpacity(0.2);
   static final linearGrey  = Color(0xffC4C4C4);

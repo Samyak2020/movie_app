@@ -3,6 +3,7 @@ import 'package:movie_watchlist_app/homescreen/home_screen.dart';
 import 'package:movie_watchlist_app/login/login_screen.dart';
 import 'package:movie_watchlist_app/signup/signup_screen.dart';
 import 'package:movie_watchlist_app/splash/splash_screen.dart';
+import 'package:movie_watchlist_app/watchlist/watchlist_screen.dart';
 import 'package:page_transition/page_transition.dart';
 
 import 'constants.dart';
@@ -46,7 +47,7 @@ class RouteGenerator{
         );
 
       case ScreenName.WatchlistScreen:
-        return MaterialPageRoute(builder: (_)=> SplashScreen());
+        return MaterialPageRoute(builder: (_)=> WatchlistScreen());
 
       case ScreenName.SearchScreen:
         return MaterialPageRoute(builder: (_)=> SplashScreen());

@@ -158,8 +158,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
               ),
             ),
             Positioned(
-              top:  screenSize.height / 5.5,
-              left: screenSize.width / 2.3,
+              top:  screenSize.height / 5.6,
+              left: screenSize.width / 2.4,
               child: GestureDetector(
                 onTap: () async {
                   _launched = _launchInBrowser(
@@ -168,7 +168,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 child: Icon(
                   Icons.play_circle_outline,
                   color: AppColors.white,
-                  size: 65,
+                  size: 80,
                 ),
               ),
             ),
