@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:movie_watchlist_app/data/models/cast_list_model.dart';
 import 'package:movie_watchlist_app/data/models/corousellistmodel/movie_model.dart';
-import 'package:movie_watchlist_app/data/models/moviespaginationmodel/movies_pagination.dart';
+import 'package:movie_watchlist_app/data/models/movieslistmodels/popular_movies_model.dart';
 import 'package:movie_watchlist_app/homescreen/home_screen_bloc.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
 import 'package:url_launcher/url_launcher.dart';

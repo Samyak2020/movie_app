@@ -20,4 +20,5 @@ class ApiConstants{
   static const String trendingUrl = "trending/movie/day?api_key=";
   static const String tvCarouselUrl = "trending/tv/day?api_key=";
   static const String popularUrl = "movie/popular?api_key=";
+  static const String topRatedUrl = "movie/top_rated?api_key=";
 }

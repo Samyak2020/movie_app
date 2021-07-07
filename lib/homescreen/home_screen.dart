@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:movie_watchlist_app/data/models/corousellistmodel/movie_model.dart';
-import 'package:movie_watchlist_app/data/models/moviespaginationmodel/movies_pagination.dart';
+import 'package:movie_watchlist_app/data/models/movieslistmodels/popular_movies_model.dart';
 import 'package:movie_watchlist_app/data/models/trailer_model.dart';
 import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_castlist.dart';
 import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_trailer.dart';
@@ -36,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
    // homeScreenBloc.fetchMoviesStream();
     homeScreenBloc.showSelectedCategory(category: "trending");
     homeScreenBloc.fetchMoviesListStream();
+    homeScreenBloc.fetchTopRatedMoviesListStream();
 
     super.initState();
   }
@@ -137,6 +138,26 @@ class _HomeScreenState extends State<HomeScreen> {
               buildPopularMovies(screenSize: screenSize,
                   stream: homeScreenBloc.popularMoviesResponseStream,
               theme: theme,
+              ),
+              SizedBox(
+                height: screenSize.width * 0.06,
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.05,),
+                child: Text("Top Rated",
+                  style: theme.textTheme.subtitle2.copyWith(
+                      fontSize:  16 ,
+                      fontWeight:  FontWeight.w700,
+                      color:  AppColors.secondWhite),
+                ),
+              ),
+              SizedBox(
+                height: screenSize.height * 0.01,
+              ),
+              buildTopRatedMovies(screenSize: screenSize,theme: theme,
+                  stream: homeScreenBloc.topRatedMoviesResponseStream,),
+              SizedBox(
+                height: screenSize.height * 0.025,
               ),
             ],
           ),
@@ -256,6 +277,162 @@ class _HomeScreenState extends State<HomeScreen> {
         stream: stream,
         builder: (context, snapshot){
           List<MoviesPaginationList> movies = snapshot.data;
+          return snapshot.connectionState == ConnectionState.waiting ?
+          CircularProgressIndicator():
+          Container(
+            padding: EdgeInsets.only(left: screenSize.width * 0.03),
+            height: screenSize.height * 0.35,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: movies.length,
+              shrinkWrap: true,
+               itemBuilder: (context, index){
+                 MoviesPaginationList popularMovies = movies[index];
+                  return Stack(
+                    children: [
+                      GestureDetector(
+                        onTap : () async{
+                          await castListRepository.fetchCastsList(popularMovies.id);
+                          List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
+                         // String trailerId = await trailerListRepository.fetchTrailersId(popularMovies.id);
+                          popularMovies.trailerId = trailerId.first.key;
+                          Navigator.push(context, MaterialPageRoute(builder: (context){
+                            return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,trailerId: popularMovies.trailerId,);
+                          }));
+                        },
+                        child: Stack(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                  screenSize.width * 0.025, 0.0, 0.0, 0.0),
+                              child: Stack(
+                                // crossAxisAlignment: CrossAxisAlignment.start,
+                                alignment: Alignment.bottomLeft,
+                                children: <Widget>[
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Card(
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          elevation: 3,
+                                          child: ClipRRect(
+                                            child: CachedNetworkImage(
+                                              imageUrl: 'https://image.tmdb.org/t/p/w200${popularMovies.posterPath}',
+                                              imageBuilder: (context, imageProvider) {
+                                                return Container(
+                                                  width: screenSize.width / 2.5,
+                                                  decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(10),
+                                                  ),
+                                                    image: DecorationImage(
+                                                      image: imageProvider,
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              placeholder: (context, url) => Container(
+                                                width: screenSize.width / 2.5,
+                                                child: Center(
+                                                  child: Platform.isAndroid
+                                                      ? CircularProgressIndicator()
+                                                      : CupertinoActivityIndicator(),
+                                                ),
+                                              ),
+                                              errorWidget: (context, url, error) => Container(
+                                                width: screenSize.width / 2.5,
+                                                decoration:
+                                                BoxDecoration(image: DecorationImage(
+                                                  image: AssetImage('assets/images/img_not_found.jpg'),
+                                                  fit: BoxFit.cover,
+                                                ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        width: screenSize.width / 2.5,
+                                        child: Text(
+                                          //person.name
+                                          popularMovies.title ?? "",
+                                          style: theme.textTheme.subtitle1.copyWith(
+                                            fontWeight:  FontWeight.w500,
+                                            color:  AppColors.secondWhite,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.star, color: AppColors.yellow,
+                                            size: 18.0,
+                                          ),
+                                          Container(
+                                            padding: EdgeInsets.only(left: 5.0),
+                                            child: Text(
+                                              // person//     .knowForDepartment
+                                              popularMovies.voteAverage.toString(),
+                                              style: theme.textTheme.subtitle2.copyWith(
+                                                  fontWeight:  FontWeight.w400,
+                                                  color:  AppColors.secondWhite),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  Positioned(
+                                    top: 3.2,
+                                    left: 4,
+                                    child: Container(
+                                      height:50.0,
+                                      width: screenSize.width / 2.5,
+                                      foregroundDecoration: BoxDecoration(
+                                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        gradient: LinearGradient(
+                                          colors: [Colors.black54, Colors.transparent, Colors.transparent, Colors.transparent],
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          stops: [0, 0.9, 0.75, 1],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Positioned(
+                        top: 10.0,
+                        right: 10.0,
+                        child: GestureDetector(
+                          child: Icon(Icons.add_box_outlined,
+                            color: AppColors.secondWhite,
+                            size: 30.0,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+               }
+            ),
+          );
+        }
+    );
+  }
+
+
+  StreamBuilder<List<MoviesPaginationList>> buildTopRatedMovies({Size screenSize, Stream stream, ThemeData theme} ){
+    return StreamBuilder(
+        stream: stream,
+        builder: (context, snapshot){
+          List<MoviesPaginationList> movies = snapshot.data;
+          print(movies);
           return snapshot.connectionState == ConnectionState.waiting ?
           CircularProgressIndicator():
           Container(
