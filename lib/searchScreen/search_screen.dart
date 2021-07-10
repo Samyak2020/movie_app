@@ -10,6 +10,7 @@ import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_trailer.dart';
 import 'package:movie_watchlist_app/detailsscreen/details_screen.dart';
 import 'package:movie_watchlist_app/homescreen/home_screen.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
+import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen();
@@ -147,10 +148,17 @@ class _SearchScreenState extends State<SearchScreen> {
                                   await castListRepository.fetchCastsList(searchedMovies.id);
                                   List<Trailer> trailerId = await trailerListRepository.fetchTrailers(searchedMovies.id);
                                   // String trailerId = await trailerListRepository.fetchTrailersId(popularMovies.id);
-                                  searchedMovies.trailerId = trailerId.first.key;
-                                  Navigator.push(context, MaterialPageRoute(builder: (context){
-                                    return DetailsScreen(isMovieModel: false,moviesPaginationList: searchedMovies,movieId: searchedMovies.id,trailerId: searchedMovies.trailerId,);
-                                  }));
+                                  if(trailerId != null){
+                                    searchedMovies.trailerId = trailerId.first.key;
+                                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                                      return DetailsScreen(isMovieModel: false,moviesPaginationList: searchedMovies,movieId: searchedMovies.id,trailerId: searchedMovies.trailerId,isTrailerIdNull: false,);
+                                    }));
+                                  }else{
+                                    ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
+                                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                                      return DetailsScreen(isMovieModel: false,moviesPaginationList: searchedMovies,movieId: searchedMovies.id,isTrailerIdNull: true,);
+                                    }));
+                                  }
                                 },
                                 child: Stack(
                                     children: [

@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -9,6 +11,7 @@ import 'package:flutter/widgets.dart';
 import 'package:movie_watchlist_app/data/models/corousellistmodel/movie_model.dart';
 import 'package:movie_watchlist_app/data/models/movieslistmodels/popular_movies_model.dart';
 import 'package:movie_watchlist_app/data/models/trailer_model.dart';
+import 'package:movie_watchlist_app/data/repo/authservices/auth_servies.dart';
 import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_castlist.dart';
 import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_trailer.dart';
 import 'package:movie_watchlist_app/detailsscreen/details_screen.dart';
@@ -16,10 +19,15 @@ import 'package:movie_watchlist_app/bloc/bloc_collection.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
 import 'package:movie_watchlist_app/utilities/constants.dart';
 import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-
+FirebaseAuth auth = FirebaseAuth.instance;
 
 class HomeScreen extends StatefulWidget {
+
+ HomeScreen({this.isLoggedInAs});
+
+  String isLoggedInAs;
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -28,28 +36,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool isTrendingSelected = true;
   bool isHomeScreen = true;
-
+  String _imageUrl;
+  String userEmail = auth.currentUser.email;
 
 
 
   @override
   void initState() {
     // TODO: implement initState
-   // moviesRepository.fetchTrendingMovies();
-    //homeScreenBloc.fetchMoviesStream();
-   // homeScreenBloc.fetchMoviesStream();
     homeScreenBloc.showSelectedCategory(category: "trending");
     homeScreenBloc.fetchMoviesListStream();
     homeScreenBloc.fetchTopRatedMoviesListStream();
-
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+
     Size screenSize = MediaQuery.of(context).size;
     var theme = Theme.of(context);
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: AppColors.black,
       appBar: AppBar(
         elevation: 0,
@@ -67,67 +74,75 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      drawer: buildDrawer(screenSize, theme,context, isHomeScreen),
+      drawer: Theme(
+          data: Theme.of(context).copyWith(
+            canvasColor: Colors.black.withOpacity(0.7),
+          ),
+          child: buildDrawer(screenSize, theme,context, isHomeScreen,  loggedInAsEmail:  userEmail)),
       body: ListView(
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  GestureDetector(
-                      child: Text("Trending",
-                        style: theme.textTheme.subtitle2.copyWith(
-                            fontSize: isTrendingSelected ? 16 : 14,
-                            fontWeight: isTrendingSelected ?FontWeight.w900 : FontWeight.w500,
-                            color: isTrendingSelected ? AppColors.white : AppColors.grey),
-                      ),
-                      onTap: () {
-                        setState(() {
-                          isTrendingSelected = true;
-                          homeScreenBloc.showSelectedCategory(category: "trending");
-                        });
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                          child: Text("Trending",
+                            style: theme.textTheme.subtitle2.copyWith(
+                                fontSize: isTrendingSelected ? 16 : 14,
+                                fontWeight: isTrendingSelected ?FontWeight.w900 : FontWeight.w500,
+                                color: isTrendingSelected ? AppColors.white : AppColors.grey),
+                          ),
+                          onTap: () {
+                            setState(() {
+                              isTrendingSelected = true;
+                              homeScreenBloc.showSelectedCategory(category: "trending");
+                            });
 
-                      }
+                          }
+                      ),
+                      SizedBox(
+                        width: screenSize.width * 0.2,
+                      ),
+                      // GestureDetector(
+                      //   child: Text("Upcoming",
+                      //     style: theme.textTheme.subtitle2.copyWith(fontWeight: FontWeight.w700, color: AppColors.secondWhite),),
+                      //   onTap: (){
+                      //     homeScreenBloc.showSelectedCategory(category: "upcoming");
+                      //   },
+                      // ),
+                      GestureDetector(
+                        child: Text("TV",
+                          style: theme.textTheme.subtitle2.copyWith(
+                              fontSize: isTrendingSelected ? 14 : 16,
+                              fontWeight:isTrendingSelected ? FontWeight.w500 : FontWeight.w900,
+                              color: isTrendingSelected ?  AppColors.grey : AppColors.white),),
+                        onTap: (){
+                          setState(() {
+                            isTrendingSelected = false;
+                            homeScreenBloc.showSelectedCategory(category: "tv");
+                          });
+
+                        },
+                      ),
+
+                    ],
                   ),
                   SizedBox(
-                    width: screenSize.width * 0.2,
+                    height: screenSize.height * 0.02,
                   ),
-                  // GestureDetector(
-                  //   child: Text("Upcoming",
-                  //     style: theme.textTheme.subtitle2.copyWith(fontWeight: FontWeight.w700, color: AppColors.secondWhite),),
-                  //   onTap: (){
-                  //     homeScreenBloc.showSelectedCategory(category: "upcoming");
-                  //   },
-                  // ),
-                  GestureDetector(
-                    child: Text("TV",
-                      style: theme.textTheme.subtitle2.copyWith(
-                          fontSize: isTrendingSelected ? 14 : 16,
-                          fontWeight:isTrendingSelected ? FontWeight.w500 : FontWeight.w900,
-                          color: isTrendingSelected ?  AppColors.grey : AppColors.white),),
-                    onTap: (){
-                      setState(() {
-                        isTrendingSelected = false;
-                        homeScreenBloc.showSelectedCategory(category: "tv");
-                      });
-
-                    },
+                  buildCarousel(screenSize: screenSize,
+                    stream: homeScreenBloc.showSelectedCategoryControllerStream,
+                    theme: theme,
                   ),
-
+                  SizedBox(
+                    height: screenSize.width * 0.06,
+                  ),
                 ],
               ),
-              SizedBox(
-                height: screenSize.height * 0.02,
-              ),
-              buildCarousel(screenSize: screenSize,
-                  stream: homeScreenBloc.showSelectedCategoryControllerStream,
-              theme: theme,
-              ),
-              SizedBox(
-                height: screenSize.width * 0.06,
-              ),
+          Column(
+            children: [
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.035,),
                 child: Text("Popular",
@@ -141,8 +156,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: screenSize.height * 0.01,
               ),
               buildPopularMovies(screenSize: screenSize,
-                  stream: homeScreenBloc.popularMoviesResponseStream,
-              theme: theme,
+                stream: homeScreenBloc.popularMoviesResponseStream,
+                theme: theme,
               ),
               SizedBox(
                 height: screenSize.width * 0.06,
@@ -160,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: screenSize.height * 0.01,
               ),
               buildTopRatedMovies(screenSize: screenSize,theme: theme,
-                  stream: homeScreenBloc.topRatedMoviesResponseStream,),
+                stream: homeScreenBloc.topRatedMoviesResponseStream,),
               SizedBox(
                 height: screenSize.height * 0.025,
               ),
@@ -186,25 +201,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   CarouselSlider(
                     items: movies.map((i) {
+                      _imageUrl = '${ApiConstants.BASE_IMAGE_URL}${i.posterPath}';
                       return Builder(
                         builder: (BuildContext context) {
                           return Stack(
                             children: [
                               GestureDetector(
                                 onTap : () async{
-                                  // await castListRepository.fetchCastsList(i.id);
-                                  // List<Trailer> trailerId = await trailerListRepository.fetchTrailers(i.id);
-                                  // i.trailerId = trailerId.first.key;
-                                  // Navigator.push(context, MaterialPageRoute(builder: (context){
-                                  //   return DetailsScreen(isMovieModel: true,
-                                  //     movieModel: i,
-                                  //     title: isTrendingSelected ? i.title :  i.name,
-                                  //   releaseDate: isTrendingSelected ? i.releaseDate :  i.fistAirDate,
-                                  //     movieId: i.id,
-                                  //       trailerId: i.trailerId
-                                  //   );
-                                  // }));
-
                                   await castListRepository.fetchCastsList(i.id);
                                   List<Trailer> trailerId = await trailerListRepository.fetchTrailers(i.id);
                                   if(trailerId != null){
@@ -232,22 +235,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                       );
                                     }));
                                   }
-
-
-                                  // await castListRepository.fetchCastsList(i.id);
-                                  // List<Trailer> trailerId = await trailerListRepository.fetchTrailers(i.id);
-                                  // if( i.trailerId != null){
-                                  //   i.trailerId = trailerId.first.key;
-                                  //   Navigator.push(context, MaterialPageRoute(builder: (context){
-                                  //     return DetailsScreen(isMovieModel: true,movieId: i.id,trailerId: i.trailerId,isTrailerIdNull: false,);
-                                  //   }));
-                                  // }else{
-                                  //   ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
-                                  //   Navigator.push(context, MaterialPageRoute(builder: (context){
-                                  //     return DetailsScreen(isMovieModel: true,movieId: i.id,isTrailerIdNull: true,);
-                                  //   }));
-                                  // }
-
                                 },
                                 child: Stack(
                                   alignment: Alignment.bottomLeft,
@@ -343,8 +330,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap : () async{
                           await castListRepository.fetchCastsList(popularMovies.id);
                           List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
-                          // String trailerId = await trailerListRepository.fetchTrailersId(popularMovies.id);
-                          if( popularMovies.trailerId != null){
+                          print("the trailer id is $trailerId");
+                          if(trailerId != null){
                             popularMovies.trailerId = trailerId.first.key;
                             Navigator.push(context, MaterialPageRoute(builder: (context){
                               return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,trailerId: popularMovies.trailerId,isTrailerIdNull: false,);
@@ -507,7 +494,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           await castListRepository.fetchCastsList(popularMovies.id);
                           List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
                          // String trailerId = await trailerListRepository.fetchTrailersId(popularMovies.id);
-                          if( popularMovies.trailerId != null){
+                          if(trailerId != null){
                             popularMovies.trailerId = trailerId.first.key;
                             Navigator.push(context, MaterialPageRoute(builder: (context){
                               return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,trailerId: popularMovies.trailerId,isTrailerIdNull: false,);
@@ -646,88 +633,78 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-Drawer buildDrawer(Size screenSize, ThemeData theme, BuildContext context, bool isHomeScreen) {
+Drawer buildDrawer(Size screenSize, ThemeData theme, BuildContext context, bool isHomeScreen, {String loggedInAsEmail}) {
   return Drawer(
-    child: Container(
-      decoration: BoxDecoration(
-        color: AppColors.black,
-      ),
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          SizedBox(height: screenSize.height * 0.05),
-          Align(
-            alignment: Alignment.centerRight,
-              child: IconButton(icon:
-              Icon(Icons.arrow_back_ios,
-                color:AppColors.white,),
-                onPressed: () => Navigator.pop(context),
-              ),
-          ),
+    child: ListView(
+      padding: EdgeInsets.zero,
+      children: <Widget>[
+        SizedBox(height: screenSize.height * 0.05),
+        Align(
+          alignment: Alignment.centerRight,
+            child: IconButton(icon:
+            Icon(Icons.arrow_back_ios,
+              color:AppColors.white,),
+              onPressed: () => Navigator.pop(context),
+            ),
+        ),
 
-          SizedBox(height: screenSize.height * 0.075),
-          Padding(
-            padding: EdgeInsets.only(left: screenSize.width * 0.035),
-            child: Text('Logged in as,',
-              style: theme.textTheme.subtitle2
-            ),
+        SizedBox(height: screenSize.height * 0.075),
+        Padding(
+          padding: EdgeInsets.only(left: screenSize.width * 0.035),
+          child: Text('Logged in as,',
+            style: theme.textTheme.subtitle2
           ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(screenSize.width * 0.035,8.0,0,screenSize.height * 0.05),
-            child: Text('User logged in info',
-              style: theme.textTheme.headline2,
-            ),
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(screenSize.width * 0.035,8.0,8.0,screenSize.height * 0.05),
+          child: Text("$loggedInAsEmail",
+            style: theme.textTheme.headline2,
           ),
-          Container(
-            //  width: screenSize.width * 0.01,
-            width: 5,
-            height: 1.0,
-            color: AppColors.grey,
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: screenSize.height * 0.05),
-            child: ListTile(
-              title: Text('Home',
-                style: theme.textTheme.subtitle1),
-              onTap: () {
-                isHomeScreen ? Navigator.pop(context) : Navigator.of(context).pushNamed(ScreenName.HomeScreen);
-                // Update the state of the app
-                // ...s
-                // Then close the drawer
-              },
-            ),
-          ),
-          SizedBox(height: screenSize.height * 0.03),
-          ListTile(
-            title: Text("Watch List",
+        ),
+        Container(
+          //  width: screenSize.width * 0.01,
+          width: 5,
+          height: 1.0,
+          color: AppColors.grey,
+        ),
+        Padding(
+          padding: EdgeInsets.only(top: screenSize.height * 0.05),
+          child: ListTile(
+            title: Text('Home',
               style: theme.textTheme.subtitle1),
             onTap: () {
-              isHomeScreen ?  Navigator.of(context).pushNamed(ScreenName.WatchlistScreen): Navigator.pop(context);
+              isHomeScreen ? Navigator.pop(context) : Navigator.of(context).pushNamed(ScreenName.HomeScreen);
             },
           ),
-          SizedBox(height: screenSize.height * 0.05),
-          Container(
-            padding: EdgeInsets.symmetric(vertical: screenSize.height * 0.04,),
-            //  width: screenSize.width * 0.01,
-            width: 5,
-            height: 1.0,
-            color: AppColors.grey,
-          ),
-          SizedBox(height: screenSize.height * 0.075),
-          ListTile(
-            title: Text("Logout",
-              style: theme.textTheme.subtitle1.copyWith(
-                  color:  AppColors.red),),
-            trailing: Icon(Icons.logout, color:AppColors.red,),
-            onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
-             // Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
+        ),
+        SizedBox(height: screenSize.height * 0.03),
+        ListTile(
+          title: Text("Watch List",
+            style: theme.textTheme.subtitle1),
+          onTap: () {
+            isHomeScreen ?  Navigator.of(context).pushNamed(ScreenName.WatchlistScreen): Navigator.pop(context);
+          },
+        ),
+        SizedBox(height: screenSize.height * 0.05),
+        Container(
+          padding: EdgeInsets.symmetric(vertical: screenSize.height * 0.04,),
+          //  width: screenSize.width * 0.01,
+          width: 5,
+          height: 1.0,
+          color: AppColors.grey,
+        ),
+        SizedBox(height: screenSize.height * 0.075),
+        ListTile(
+          title: Text("Logout",
+            style: theme.textTheme.subtitle1.copyWith(
+                color:  AppColors.red),),
+          trailing: Icon(Icons.logout, color:AppColors.red,),
+          onTap: () async{
+            await authServices.signOut(context: context);
+            print("Loggin out ");
+          },
+        ),
+      ],
     ),
   );
 }
