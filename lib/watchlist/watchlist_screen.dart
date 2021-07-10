@@ -1,12 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:movie_watchlist_app/data/models/trailer_model.dart';
-import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_castlist.dart';
-import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_trailer.dart';
-import 'package:movie_watchlist_app/detailsscreen/details_screen.dart';
 import 'package:movie_watchlist_app/homescreen/home_screen.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
-import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
+
 
 class WatchlistScreen extends StatefulWidget {
   const WatchlistScreen();
@@ -18,6 +15,7 @@ class WatchlistScreen extends StatefulWidget {
 class _WatchlistScreenState extends State<WatchlistScreen> {
 
   bool isHomeScreen = false;
+  String userEmail = auth.currentUser.email;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +33,11 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
               color:  AppColors.secondWhite),
         ),
       ),
-      drawer: buildDrawer(screenSize, theme,context, isHomeScreen),
+      drawer: Theme(
+          data: Theme.of(context).copyWith(
+            canvasColor: Colors.black.withOpacity(0.7),
+          ),
+          child: buildDrawer(screenSize, theme,context, isHomeScreen, loggedInAsEmail: userEmail)),
       body: ListView.builder(
         itemCount: 2,
         itemBuilder: (context, builder){

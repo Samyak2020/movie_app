@@ -1,19 +1,26 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:movie_watchlist_app/data/repo/home_repos/search_example.dart';
-import 'package:movie_watchlist_app/searchScreen/search_screen.dart';
-import 'package:movie_watchlist_app/splash/splash_screen.dart';
-import 'package:movie_watchlist_app/utilities/constants.dart';
+import 'package:movie_watchlist_app/data/repo/authservices/auth_servies.dart';
 import 'package:movie_watchlist_app/utilities/routes.dart';
 import 'package:movie_watchlist_app/utilities/theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+void main() async{
   SystemChrome.setSystemUIOverlayStyle(
     SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       //systemNavigationBarColor: Colors.transparent,
     ),
   );
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  var userId = prefs.getString('userID');
+  prefs.getString('email');
+  prefs.getInt('uId');
+
   runApp(MyApp());
 }
 
@@ -26,7 +33,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: appTheme(),
-      initialRoute: ScreenName.HomeScreen,
+      //initialRoute: ScreenName.HomeScreen,
+      home: authServices.handleAuth(),
       //initialRoute: ScreenName.WatchlistScreen,
       //initialRoute: ScreenName.DetailsScreen,
      // home: SearchBarDemoHome(),
