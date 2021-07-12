@@ -8,6 +8,8 @@ import 'package:movie_watchlist_app/data/repo/home_repos/fetch_carousel_movies.d
 import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_castlist.dart';
 import 'package:movie_watchlist_app/data/repo/home_repos/fetch_movieslist.dart';
 import 'package:movie_watchlist_app/data/repo/search_repo.dart';
+import 'package:movie_watchlist_app/db/movie_modelDB.dart';
+import 'package:movie_watchlist_app/db/movies_db.dart';
 import 'package:rxdart/rxdart.dart';
 
 class BlocCollection extends BaseBloc {
@@ -19,6 +21,7 @@ class BlocCollection extends BaseBloc {
   final showSelectedCategoryController = BehaviorSubject<List<MovieModel>>();
   final castListController = BehaviorSubject<List<Cast>>();
   final trailerListController = BehaviorSubject<List<Trailer>>();
+  final offlineWatchListController = BehaviorSubject<List<MovieDBModel>>();
 
   Stream<List<MovieModel>> get trendingMoviesResponseStream => trendingMoviesController.stream;
   Stream<List<MoviesPaginationList>> get popularMoviesResponseStream => popularMoviesController.stream;
@@ -28,6 +31,7 @@ class BlocCollection extends BaseBloc {
   Stream<List<MovieModel>> get showSelectedCategoryControllerStream => showSelectedCategoryController.stream;
   Stream<List<Cast>> get castListResponseStream => castListController.stream;
   Stream<List<Trailer>> get trailerListResponseStream => trailerListController.stream;
+  Stream<List<MovieDBModel>> get offlineWatchListStream => offlineWatchListController.stream;
 
   Function(List<MovieModel>) get addTrendingMoviesResponseToStream => trendingMoviesController.sink.add;
   Function(List<MoviesPaginationList>) get addPopularMoviesResponseToStream => popularMoviesController.sink.add;
@@ -37,6 +41,7 @@ class BlocCollection extends BaseBloc {
   Function(List<MovieModel>) get addShowSelectedCategoryToStream => showSelectedCategoryController.sink.add;
   Function(List<Cast>) get addCastListToStream => castListController.sink.add;
   Function(List<Trailer>) get addTrailerListToStream => trailerListController.sink.add;
+  Function(List<MovieDBModel>) get addOfflineWatchListToStream => offlineWatchListController.sink.add;
 
 
   showSelectedCategory({String category}) async{
@@ -75,6 +80,12 @@ class BlocCollection extends BaseBloc {
     addsearchMoviesResponseToStream(movies);
   }
 
+  fetchOfflineWatchListMovies({String uid}) async{
+    List<MovieDBModel> movies =  await MovieDB.db.getData();
+    print("offline movies at Bloc $movies");
+    addOfflineWatchListToStream(movies);
+  }
+
 
   @override
   void dispose() {
@@ -87,6 +98,7 @@ class BlocCollection extends BaseBloc {
     castListController.close();
     trailerListController.close();
     searchMoviesController.close();
+    offlineWatchListController.close();
   }
 }
 final BlocCollection homeScreenBloc = BlocCollection();

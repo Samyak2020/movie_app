@@ -1,9 +1,7 @@
 import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -14,12 +12,14 @@ import 'package:movie_watchlist_app/data/models/trailer_model.dart';
 import 'package:movie_watchlist_app/data/repo/authservices/auth_servies.dart';
 import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_castlist.dart';
 import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_trailer.dart';
+import 'package:movie_watchlist_app/db/movie_modelDB.dart';
+import 'package:movie_watchlist_app/db/movies_db.dart';
 import 'package:movie_watchlist_app/detailsscreen/details_screen.dart';
 import 'package:movie_watchlist_app/bloc/bloc_collection.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
 import 'package:movie_watchlist_app/utilities/constants.dart';
 import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
 
 FirebaseAuth auth = FirebaseAuth.instance;
 
@@ -38,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isHomeScreen = true;
   String _imageUrl;
   String userEmail = auth.currentUser.email;
+  String uid = auth.currentUser.uid;
 
 
 
@@ -82,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: ListView(
         children: [
               Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -141,45 +142,41 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-          Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.035,),
-                child: Text("Popular",
-                  style: theme.textTheme.subtitle2.copyWith(
-                      fontSize:  16 ,
-                      fontWeight:  FontWeight.w700,
-                      color:  AppColors.secondWhite),
-                ),
-              ),
-              SizedBox(
-                height: screenSize.height * 0.01,
-              ),
-              buildPopularMovies(screenSize: screenSize,
-                stream: homeScreenBloc.popularMoviesResponseStream,
-                theme: theme,
-              ),
-              SizedBox(
-                height: screenSize.width * 0.06,
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.035,),
-                child: Text("Top Rated",
-                  style: theme.textTheme.subtitle2.copyWith(
-                      fontSize:  16 ,
-                      fontWeight:  FontWeight.w700,
-                      color:  AppColors.secondWhite),
-                ),
-              ),
-              SizedBox(
-                height: screenSize.height * 0.01,
-              ),
-              buildTopRatedMovies(screenSize: screenSize,theme: theme,
-                stream: homeScreenBloc.topRatedMoviesResponseStream,),
-              SizedBox(
-                height: screenSize.height * 0.025,
-              ),
-            ],
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.035,),
+            child: Text("Popular",
+              style: theme.textTheme.subtitle2.copyWith(
+                  fontSize:  16 ,
+                  fontWeight:  FontWeight.w700,
+                  color:  AppColors.secondWhite),
+            ),
+          ),
+          SizedBox(
+            height: screenSize.height * 0.01,
+          ),
+          buildPopularMovies(screenSize: screenSize,
+            stream: homeScreenBloc.popularMoviesResponseStream,
+            theme: theme,
+          ),
+          SizedBox(
+            height: screenSize.width * 0.06,
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.035,),
+            child: Text("Top Rated",
+              style: theme.textTheme.subtitle2.copyWith(
+                  fontSize:  16 ,
+                  fontWeight:  FontWeight.w700,
+                  color:  AppColors.secondWhite),
+            ),
+          ),
+          SizedBox(
+            height: screenSize.height * 0.01,
+          ),
+          buildTopRatedMovies(screenSize: screenSize,theme: theme,
+            stream: homeScreenBloc.topRatedMoviesResponseStream,),
+          SizedBox(
+            height: screenSize.height * 0.025,
           ),
         ],
       ),
@@ -314,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, snapshot){
           List<MoviesPaginationList> movies = snapshot.data;
           return snapshot.connectionState == ConnectionState.waiting ?
-          CircularProgressIndicator():
+          Center(child: CircularProgressIndicator()):
           Container(
             padding: EdgeInsets.only(left: screenSize.width * 0.03),
             height: screenSize.height * 0.35,
@@ -455,6 +452,23 @@ class _HomeScreenState extends State<HomeScreen> {
                         top: 10.0,
                         right: 10.0,
                         child: GestureDetector(
+
+                          onTap: (){
+                             var hello =  MovieDB.db.insertData(MovieDBModel(
+                              posterPath: popularMovies.posterPath,
+                              title : popularMovies.title,
+                              movieId: popularMovies.id,
+                              uid: uid,
+                              overview: popularMovies.overview,
+                              voteAverage: popularMovies.voteAverage.toString(),
+                              releaseDate: popularMovies.releaseDate,
+                            ));
+                              print("SAVED IN DB ?? $hello");
+
+                          //  MovieDB.db.insertData()Employee.fromJson(employee));
+                          // }).toList();
+                          //  print("SAVED IN DB ?? $hello");
+                           },
                           child: Icon(Icons.add_box_outlined,
                             color: AppColors.secondWhite,
                             size: 30.0,
@@ -477,7 +491,7 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, snapshot){
           List<MoviesPaginationList> movies = snapshot.data;
           return snapshot.connectionState == ConnectionState.waiting ?
-          CircularProgressIndicator():
+          Center(child: CircularProgressIndicator()):
           Container(
             padding: EdgeInsets.only(left: screenSize.width * 0.03),
             height: screenSize.height * 0.35,
