@@ -8,7 +8,7 @@ class MovieDBModel{
   final String name;
   final String overview;
   final String releaseDate;
-  final String voteAverage;
+  final double voteAverage;
   final String posterPath;
 
   MovieDBModel({this.uid,this.movieId, this.id, this.title, this.name, this.overview, this.releaseDate, this.voteAverage, this.posterPath});

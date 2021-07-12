@@ -460,7 +460,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               movieId: popularMovies.id,
                               uid: uid,
                               overview: popularMovies.overview,
-                              voteAverage: popularMovies.voteAverage.toString(),
+                              voteAverage: popularMovies.voteAverage,
                               releaseDate: popularMovies.releaseDate,
                             ));
                               print("SAVED IN DB ?? $hello");
