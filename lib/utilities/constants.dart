@@ -10,6 +10,8 @@ class ScreenName {
   static const String SearchScreen = "SearchScreen";
 }
 
+
+
 class ApiConstants{
   ApiConstants._();
 

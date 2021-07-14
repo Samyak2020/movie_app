@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:movie_watchlist_app/data/repo/authservices/auth_servies.dart';
+import 'package:movie_watchlist_app/utilities/connectivity.dart';
 import 'package:movie_watchlist_app/utilities/routes.dart';
 import 'package:movie_watchlist_app/utilities/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';

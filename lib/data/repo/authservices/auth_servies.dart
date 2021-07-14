@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:movie_watchlist_app/homescreen/home_screen.dart';
 import 'package:movie_watchlist_app/login/login_screen.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
+import 'package:movie_watchlist_app/utilities/connectivity.dart';
+import 'package:movie_watchlist_app/watchlist/watchlist_screen.dart';
 import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -15,10 +17,22 @@ class AuthServices{
     return StreamBuilder(
         stream: _auth.authStateChanges(),
         builder: (BuildContext context, snapshot) {
+          internetConnectionUtils.checkInternetConnection().then((isConnected) {
+            if(isConnected){
+              if (snapshot.hasData) {
+            return HomeScreen();
+          } else{
+            return LoginScreen();
+          }
+            }else{
+              return WatchlistScreen();
+          }}
+          );
           if (snapshot.hasData) {
             return HomeScreen();
-          } else
+          } else{
             return LoginScreen();
+          }
         });
   }
 
@@ -113,3 +127,4 @@ class AuthServices{
 }
 
 AuthServices authServices = AuthServices();
+

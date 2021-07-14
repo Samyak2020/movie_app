@@ -48,6 +48,8 @@ class _HomeScreenState extends State<HomeScreen> {
     homeScreenBloc.showSelectedCategory(category: "trending");
     homeScreenBloc.fetchMoviesListStream();
     homeScreenBloc.fetchTopRatedMoviesListStream();
+    //homeScreenBloc.getMovieWatchlistedStatus();
+    homeScreenBloc.insertMovieToDb(isInDb: false);
     super.initState();
   }
 
@@ -448,33 +450,44 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
-                      Positioned(
-                        top: 10.0,
-                        right: 10.0,
-                        child: GestureDetector(
+                            Positioned(
+                            top: 10.0,
+                            right: 10.0,
+                            child: GestureDetector(
+                              onTap: ()  async {
+                                //homeScreenBloc.getMovieWatchlistedStatus(uid: uid, movieId: popularMovies.id);
 
-                          onTap: (){
-                             var hello =  MovieDB.db.insertData(MovieDBModel(
-                              posterPath: popularMovies.posterPath,
-                              title : popularMovies.title,
-                              movieId: popularMovies.id,
-                              uid: uid,
-                              overview: popularMovies.overview,
-                              voteAverage: popularMovies.voteAverage,
-                              releaseDate: popularMovies.releaseDate,
-                            ));
-                              print("SAVED IN DB ?? $hello");
+                                // if(snapshot.data){
+                                  print("Added to db ? yes");
+                                  await MovieDB.db.insertData(MovieDBModel(
+                                      posterPath:  popularMovies.posterPath,
+                                      title :  popularMovies.title,
+                                      movieId:  popularMovies.id,
+                                      uid: uid,
+                                      overview: popularMovies.overview,
+                                      voteAverage: popularMovies.voteAverage,
+                                      releaseDate:  popularMovies.releaseDate,
+                                      isWishListed: 1
+                                  ));
+                                // }else{
+                                //   await MovieDB.db.deleteMovie(id:  popularMovies.id);
+                                //   print("UHMMMM");
+                              //  }
 
-                          //  MovieDB.db.insertData()Employee.fromJson(employee));
-                          // }).toList();
-                          //  print("SAVED IN DB ?? $hello");
-                           },
-                          child: Icon(Icons.add_box_outlined,
-                            color: AppColors.secondWhite,
-                            size: 30.0,
+                              },
+                              child:  Icon(Icons.check_box,
+                                color: AppColors.blue,
+                                size: 30.0,
+                              // ) : Icon(Icons.add_box_outlined,
+                              //   color: AppColors.secondWhite,
+                              //   size: 30.0,
+                              ),
+                              // child: Icon(Icons.add_box_outlined,
+                              //   color: AppColors.secondWhite,
+                              //   size: 30.0,
+                              // ),
+                            ),
                           ),
-                        ),
-                      ),
                     ],
                   );
                }

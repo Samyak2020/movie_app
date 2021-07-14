@@ -1,5 +1,4 @@
-import 'package:movie_watchlist_app/data/models/corousellistmodel/movie_model.dart';
-import 'package:movie_watchlist_app/data/models/movieslistmodels/popular_movies_model.dart';
+
 import 'package:movie_watchlist_app/db/movie_modelDB.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -21,6 +20,7 @@ class MovieDB{
           CREATE TABLE MovieTable(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           movie_id INTEGER,
+          is_wishlisted INTEGER,
           uid TEXT,
           title TEXT,
           name TEXT,
@@ -47,4 +47,10 @@ class MovieDB{
     final data = await db.query("MovieTable");
     return data.map((e) => MovieDBModel.fromMap(e)).toList();
   }
+
+  Future<void> deleteMovie({int id}) async {
+    final Database db = await initDB();
+    await db.delete("MovieTable", where: "id=?", whereArgs: [id]);
+  }
+
 }
