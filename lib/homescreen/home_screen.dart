@@ -63,7 +63,12 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.black,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: AppColors.black,
+        centerTitle: true,
+        title: Text(
+          "MOVIES",
+          style: theme.textTheme.headline2.copyWith(
+              color:  AppColors.secondWhite),
+        ),
         actions: <Widget>[
           IconButton(
             iconSize: 30.0,
@@ -79,19 +84,22 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       drawer: Theme(
           data: Theme.of(context).copyWith(
-            canvasColor: Colors.black.withOpacity(0.7),
+            canvasColor: Colors.black.withOpacity(0.8),
           ),
           child: buildDrawer(screenSize, theme,context, isHomeScreen,  loggedInAsEmail:  userEmail)),
       body:  StreamBuilder(
         stream: homeScreenBloc.checkInternetConnectivityStream,
         builder: (context, snapshot) {
           bool hasConnection = snapshot.data;
-          if( snapshot.connectionState == ConnectionState.waiting){
+          if(snapshot.connectionState == ConnectionState.waiting){
             return CircularProgressIndicator();
           }else {
             if(hasConnection == true){
             return ListView(
               children: [
+                SizedBox(
+                  height: screenSize.width * 0.02,
+                ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -101,9 +109,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         GestureDetector(
                             child: Text("Trending",
                               style: theme.textTheme.subtitle2.copyWith(
-                                  fontSize: isTrendingSelected ? 16 : 14,
+                                  fontSize: isTrendingSelected ? 18 : 16,
+                                  letterSpacing: isTrendingSelected ? 2.0  : 0.0,
                                   fontWeight: isTrendingSelected ?FontWeight.w900 : FontWeight.w500,
-                                  color: isTrendingSelected ? AppColors.white : AppColors.grey),
+                                  color: isTrendingSelected ? AppColors.white : AppColors.grey,),
                             ),
                             onTap: () {
                               setState(() {
@@ -114,13 +123,22 @@ class _HomeScreenState extends State<HomeScreen> {
                             }
                         ),
                         SizedBox(
-                          width: screenSize.width * 0.2,
+                          width: screenSize.width * 0.1,
+                        ),
+                        Container(
+                          width: 4.0,
+                          height: 16.0,
+                          color: Color(0xff3A3B3C),
+                        ),
+                        SizedBox(
+                          width: screenSize.width * 0.1,
                         ),
                         GestureDetector(
                           child: Text("TV",
                             style: theme.textTheme.subtitle2.copyWith(
-                                fontSize: isTrendingSelected ? 14 : 16,
+                                fontSize: isTrendingSelected ? 16 : 18,
                                 fontWeight:isTrendingSelected ? FontWeight.w500 : FontWeight.w900,
+                                letterSpacing: isTrendingSelected ? 0.0  : 3.0,
                                 color: isTrendingSelected ?  AppColors.grey : AppColors.white),),
                           onTap: (){
                             setState(() {
@@ -134,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     SizedBox(
-                      height: screenSize.height * 0.02,
+                      height: screenSize.height * 0.025,
                     ),
                     buildCarousel(screenSize: screenSize,
                       stream: homeScreenBloc.showSelectedCategoryControllerStream,
@@ -148,10 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.035,),
                   child: Text("Popular",
-                    style: theme.textTheme.subtitle2.copyWith(
-                        fontSize:  16 ,
-                        fontWeight:  FontWeight.w700,
-                        color:  AppColors.secondWhite),
+                    style: theme.textTheme.subtitle1,
                   ),
                 ),
                 SizedBox(
@@ -167,10 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.035,),
                   child: Text("Top Rated",
-                    style: theme.textTheme.subtitle2.copyWith(
-                        fontSize:  16 ,
-                        fontWeight:  FontWeight.w700,
-                        color:  AppColors.secondWhite),
+                    style: theme.textTheme.subtitle1,
                   ),
                 ),
                 SizedBox(
@@ -671,7 +683,6 @@ Drawer buildDrawer(Size screenSize, ThemeData theme, BuildContext context, bool 
               onPressed: () => Navigator.pop(context),
             ),
         ),
-
         SizedBox(height: screenSize.height * 0.075),
         Padding(
           padding: EdgeInsets.only(left: screenSize.width * 0.035),

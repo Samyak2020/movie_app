@@ -44,12 +44,13 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
     Size screenSize = MediaQuery.of(context).size;
     var theme = Theme.of(context);
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: AppColors.black,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        centerTitle: true,
         title: Text(
-          "Watch List",
+          "WATCH LIST",
           style: theme.textTheme.headline2.copyWith(
               color:  AppColors.secondWhite),
         ),

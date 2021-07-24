@@ -33,6 +33,13 @@ ThemeData appTheme(){
   }
   final ThemeData base = ThemeData(
       fontFamily: 'Nunito',
+      appBarTheme: AppBarTheme(
+        color: AppColors.black,
+        brightness: Brightness.dark,
+        iconTheme: IconThemeData(
+          color: AppColors.white, //change your color here
+        ),
+      ),
   );
 
   return base.copyWith(

@@ -8,9 +8,13 @@ import 'package:movie_watchlist_app/utilities/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async{
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light));
+
+  Future.delayed(Duration(milliseconds: 1)).then(
+          (value) => SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+         //statusBarIconBrightness: Brightness.light,
+      )));
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();

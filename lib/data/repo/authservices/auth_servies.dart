@@ -3,10 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:movie_watchlist_app/homescreen/home_screen.dart';
 import 'package:movie_watchlist_app/login/login_screen.dart';
-import 'package:movie_watchlist_app/splash/splash_screen.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
-import 'package:movie_watchlist_app/utilities/connectivity.dart';
-import 'package:movie_watchlist_app/watchlist/watchlist_screen.dart';
 import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

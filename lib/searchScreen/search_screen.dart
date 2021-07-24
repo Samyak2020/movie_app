@@ -49,6 +49,12 @@ class _SearchScreenState extends State<SearchScreen> {
             Navigator.pop(context);
           },
         ),
+        centerTitle: true,
+        title: Text(
+          "SEARCH",
+          style: theme.textTheme.headline2.copyWith(
+              color:  AppColors.secondWhite),
+        ),
         backgroundColor: Colors.transparent,
       ),
       body: Column(
@@ -81,8 +87,8 @@ class _SearchScreenState extends State<SearchScreen> {
               cursorColor: AppColors.white,
               decoration: InputDecoration(
                 border: InputBorder.none,
-                hintText: 'Search',
-                hintStyle: theme.textTheme.subtitle1
+                hintText: 'movie name...',
+                hintStyle: theme.textTheme.bodyText1
                     .copyWith(color: AppColors.grey),
                 prefixIcon: Padding(
                   padding: EdgeInsets.only(left: 16.0, right: 16.0),

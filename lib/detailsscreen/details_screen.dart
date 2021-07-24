@@ -286,7 +286,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.fromLTRB(16.0, screenSize.width * 0.1, 16.0, 0),
+                        padding: EdgeInsets.fromLTRB(16.0, screenSize.width * 0.075, 16.0, 0),
                         child: Text(
                           //widget.movieModel.title ?? widget.moviesPaginationList.title ?? "",
                           "Summary",
