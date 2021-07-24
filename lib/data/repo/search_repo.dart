@@ -8,7 +8,6 @@ class SearchMoviesRepository extends BaseRepo{
   Future<List<MoviesPaginationList>> fetchSearchQuery(String query) async{
     final response = await getSearchResult(searchQuery: query);
     final result = MoviesPagination.fromJson(response).results;
-    print("Search result at repo $result");
     return result;
   }
 }

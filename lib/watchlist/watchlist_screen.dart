@@ -1,11 +1,17 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:movie_watchlist_app/bloc/bloc_collection.dart';
+import 'package:movie_watchlist_app/data/models/movieslistmodels/popular_movies_model.dart';
+import 'package:movie_watchlist_app/data/models/trailer_model.dart';
+import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_castlist.dart';
+import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_trailer.dart';
 import 'package:movie_watchlist_app/db/movie_modelDB.dart';
 import 'package:movie_watchlist_app/db/movies_db.dart';
 import 'package:movie_watchlist_app/homescreen/home_screen.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
+import 'package:movie_watchlist_app/utilities/connectivity.dart';
 import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
+import 'package:movie_watchlist_app/detailsscreen/details_screen.dart';
 
 
 class WatchlistScreen extends StatefulWidget {
@@ -30,6 +36,9 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
     homeScreenBloc.fetchOfflineWatchListMovies();
   }
 
+
+
+
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
@@ -41,7 +50,6 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
         backgroundColor: Colors.transparent,
         title: Text(
           "Watch List",
-          //  popularMovies.voteAverage.toString(),
           style: theme.textTheme.headline2.copyWith(
               color:  AppColors.secondWhite),
         ),
@@ -55,14 +63,16 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
         stream: homeScreenBloc.offlineWatchListStream,
         builder: (context, snapshot) {
           List<MovieDBModel> movies = snapshot.data;
+          List<MoviesPaginationList> moviePagniationListItems;
           return snapshot.connectionState == ConnectionState.waiting ?
           Center(child: CircularProgressIndicator()):
           ListView.builder(
             itemCount: movies.length,
             shrinkWrap: true,
             itemBuilder: (context, index){
-              MovieDBModel offlineMovies = movies[index];
-              if(offlineMovies.uid == userId){
+              MovieDBModel movie = movies[index];
+             // MoviesPaginationList moviesPaginationList = moviePagniationListItems[index];
+              if(movie.uid == userId){
                 return Stack(
                     alignment: Alignment.bottomLeft,
                     children:[
@@ -91,29 +101,57 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                         Icon(Icons.cancel_outlined,
                           color:AppColors.red,),
                           onPressed: () async{
-                            await MovieDB.db.deleteMovie(id : offlineMovies.id);
+                            await MovieDB.db.deleteMovie(id : movie.movieId);
                             await homeScreenBloc.fetchOfflineWatchListMovies();
+                            homeScreenBloc.movieIsInTheDb();
                             ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Deleted from WatchList"));
                           },
                         ),
                       ),
                       GestureDetector(
                         onTap: () async{
-                          //       await castListRepository.fetchCastsList(popularMovies.id);
-                          //       List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
-                          //       // String trailerId = await trailerListRepository.fetchTrailersId(popularMovies.id);
-                          //
-                          // if( popularMovies.trailerId != null){
-                          //   popularMovies.trailerId = trailerId.first.key;
-                          //   Navigator.push(context, MaterialPageRoute(builder: (context){
-                          //     return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,trailerId: popularMovies.trailerId,isTrailerIdNull: false,);
-                          //   }));
-                          // }else{
-                          //   ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
-                          //   Navigator.push(context, MaterialPageRoute(builder: (context){
-                          //     return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,isTrailerIdNull: true,);
-                          //   }));
-                          // }
+                          internetConnectionUtils.checkConnection().then((isConnected) async{
+                            if(isConnected == false){
+                              if(movie.trailerId != null){
+                                Navigator.push(context, MaterialPageRoute(builder: (context){
+                                  return DetailsScreen(isMovieModel: false,movieId: movie.movieId,trailerId: movie.trailerId,
+                                    isTrailerIdNull: false, backDropPath: movie.backDropPath,language: movie.language,
+                                    title: movie.title, releaseDate: movie.releaseDate, posterPath: movie.posterPath,
+                                    voteAverage: movie.voteAverage, overView: movie.overview, hasConnection: false,
+                                  );
+                                }));
+                              }else{
+                                ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
+                                Navigator.push(context, MaterialPageRoute(builder: (context){
+                                  return DetailsScreen(isMovieModel: false,movieId: movie.movieId,
+                                    isTrailerIdNull: true, backDropPath: movie.backDropPath,language: movie.language,
+                                    title: movie.title, releaseDate: movie.releaseDate, posterPath: movie.posterPath,
+                                    voteAverage: movie.voteAverage, overView: movie.overview, hasConnection: false,);
+                                }));
+                              }
+                              }else{
+                              await castListRepository.fetchCastsList(movie.movieId);
+                              List<Trailer> trailerId = await trailerListRepository.fetchTrailers(movie.movieId);
+                              if(trailerId != null){
+                                Navigator.push(context, MaterialPageRoute(builder: (context){
+                                  return DetailsScreen(isMovieModel: false,movieId: movie.movieId,trailerId: movie.trailerId,
+                                    isTrailerIdNull: false, backDropPath: movie.backDropPath,language: movie.language,
+                                    title: movie.title, releaseDate: movie.releaseDate, posterPath: movie.posterPath,
+                                    voteAverage: movie.voteAverage, overView: movie.overview,
+                                  );
+                                }));
+                              }else{
+                                ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
+                                Navigator.push(context, MaterialPageRoute(builder: (context){
+                                  return DetailsScreen(isMovieModel: false,movieId: movie.movieId,
+                                    isTrailerIdNull: true, backDropPath: movie.backDropPath,language: movie.language,
+                                    title: movie.title, releaseDate: movie.releaseDate, posterPath: movie.posterPath,
+                                    voteAverage: movie.voteAverage, overView: movie.overview,);
+                                }));
+                              }
+                            }
+                            }
+                          );
                         },
                         child: Stack(
                             children: [
@@ -131,7 +169,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                         child: CachedNetworkImage(
                                           height: screenSize.height / 4.5,
                                           width: screenSize.width / 3,
-                                          imageUrl: 'https://image.tmdb.org/t/p/w200${offlineMovies.posterPath}',
+                                          imageUrl: 'https://image.tmdb.org/t/p/w200${movie.posterPath}',
                                           fit: BoxFit.cover,
                                         ),
                                       ),
@@ -144,23 +182,18 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              offlineMovies.title,
+                                              movie.title,
                                               style: theme.textTheme.subtitle1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                             Text(
-                                              offlineMovies.releaseDate,
+                                              movie.releaseDate,
                                               style: theme.textTheme.subtitle2,
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                             SizedBox(height: screenSize.height * 0.01),
                                             Text(
-                                              //widget.movieModel.title ?? widget.moviesPaginationList.title ?? "",
-                                              // widget.isMovieModel
-                                              //     ? widget.movieModel.overview
-                                              //     : widget.moviesPaginationList.overview,
-                                              //"OVERview sjafhas bjasfj ajlf lksabfjk asbjf bsalfbla bjfb jbs jkasb fjkasjglj aiohifjj lkahkfasj fhakb jflasbfou iahfjalsbfk jasbf hajsbf lakbsk fja0,",
-                                              offlineMovies.overview,
+                                              movie.overview,
                                               style: theme.textTheme.bodyText1,
                                               textAlign: TextAlign.left,
                                               maxLines: 2,
@@ -175,7 +208,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                                 Container(
                                                   padding: EdgeInsets.only(left: 5.0),
                                                   child: Text(
-                                                    offlineMovies.voteAverage.toString(),
+                                                    movie.voteAverage.toString(),
                                                     style: theme.textTheme.subtitle2.copyWith(
                                                         color:  AppColors.secondWhite),
                                                   ),
@@ -197,8 +230,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
               }else{
                 return SizedBox();
               }
-
-    },
+              },
           );
         }
       ),

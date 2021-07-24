@@ -32,15 +32,7 @@ ThemeData appTheme(){
     );
   }
   final ThemeData base = ThemeData(
-    //primaryColor: ZiteColors.purple,
       fontFamily: 'Nunito',
-      // appBarTheme: AppBarTheme(
-      //   color: Colors.transparent,
-      //   brightness: Brightness.light,
-      //   iconTheme: IconThemeData(
-      //     color: AppColors.grey, //change your color here
-      //   ),
-      // )
   );
 
   return base.copyWith(

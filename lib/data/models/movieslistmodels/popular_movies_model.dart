@@ -50,6 +50,7 @@ class MoviesPaginationList {
   double voteAverage;
   int voteCount;
   List<CastList> cast;
+  bool isWishlisted;
 
   MoviesPaginationList(
       {this.adult,
@@ -66,10 +67,13 @@ class MoviesPaginationList {
         this.title,
         this.video,
         this.voteAverage,
-        this.voteCount});
+        this.voteCount,
+        this.isWishlisted = false
+      });
 
   MoviesPaginationList.fromJson(Map<String, dynamic> json) {
     adult = json['adult'];
+    isWishlisted = json['isWishlisted'];
     backdropPath = json['backdrop_path'];
     genreIds = json['genre_ids'].cast<int>();
     id = json['id'];
@@ -88,6 +92,7 @@ class MoviesPaginationList {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['adult'] = this.adult;
+    data['isWishlisted'] = this.isWishlisted;
     data['backdrop_path'] = this.backdropPath;
     data['genre_ids'] = this.genreIds;
     data['id'] = this.id;

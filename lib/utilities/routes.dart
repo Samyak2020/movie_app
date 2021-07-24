@@ -22,8 +22,6 @@ class RouteGenerator{
         return MaterialPageRoute(builder: (_)=> SplashScreen());
 
       case ScreenName.LoginScreen:
- //       if(args is String){}
-        //return MaterialPageRoute(builder: (_)=> LoginScreen()
            return  PageTransition(
             child: LoginScreen(),
     type: PageTransitionType.leftToRightWithFade,

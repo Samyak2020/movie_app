@@ -15,7 +15,6 @@ class MoviesListRepository extends BaseRepo{
   Future<List<MoviesPaginationList>> fetchTopRatedMovies() async{
     final response = await getItems(ApiConstants.topRatedUrl);
     final movies = MoviesPagination.fromJson(response).results;
-    print("Movies at repo $movies");
     return movies;
   }
 }

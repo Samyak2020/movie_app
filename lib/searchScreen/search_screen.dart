@@ -8,7 +8,6 @@ import 'package:movie_watchlist_app/data/models/trailer_model.dart';
 import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_castlist.dart';
 import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_trailer.dart';
 import 'package:movie_watchlist_app/detailsscreen/details_screen.dart';
-import 'package:movie_watchlist_app/homescreen/home_screen.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
 import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
 
@@ -24,13 +23,11 @@ class _SearchScreenState extends State<SearchScreen> {
   bool isHomeScreen = false;
   final _searchQuery = new TextEditingController();
   Function onTextChanged;
-  Timer _debounce;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-   // _searchQuery.addListener(_onSearchChanged);
   }
 
 
@@ -76,7 +73,6 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             child: TextField(
               onChanged: (value){
-                print(value);
                 homeScreenBloc.fetchSearchMovies(searchQuery: value);
               },
               textAlignVertical: TextAlignVertical.center,
@@ -104,14 +100,13 @@ class _SearchScreenState extends State<SearchScreen> {
               stream: homeScreenBloc.searchMoviesResponseStream,
               builder: (context, snapshot) {
                 List<MoviesPaginationList> movies = snapshot.data;
-                print("search result in streambuilder ${snapshot.data}");
                 return snapshot.connectionState == ConnectionState.waiting ?
                SizedBox():
                 ListView.builder(
                   itemCount: movies.length,
                   shrinkWrap: true,
                   itemBuilder: (context, index){
-                    MoviesPaginationList searchedMovies = movies[index];
+                    MoviesPaginationList movie = movies[index];
                     return Column(
                       children: [
                         Stack(
@@ -135,28 +130,26 @@ class _SearchScreenState extends State<SearchScreen> {
                                   ),
                                 ),
                               ),
-                              Positioned(
-                                right: screenSize.width * 0.04,
-                                top: screenSize.height * 0.075,
-                                child: IconButton(icon:
-                                Icon(Icons.add_box_outlined,
-                                  color:AppColors.white,),
-                                ),
-                              ),
                               GestureDetector(
                                 onTap: () async{
-                                  await castListRepository.fetchCastsList(searchedMovies.id);
-                                  List<Trailer> trailerId = await trailerListRepository.fetchTrailers(searchedMovies.id);
-                                  // String trailerId = await trailerListRepository.fetchTrailersId(popularMovies.id);
-                                  if(trailerId != null){
-                                    searchedMovies.trailerId = trailerId.first.key;
+                                  await castListRepository.fetchCastsList(movie.id);
+                                  List<Trailer> trailerId = await trailerListRepository.fetchTrailers(movie.id);
+                                  if(trailerId.isNotEmpty){
+                                    movie.trailerId = trailerId.first.key;
                                     Navigator.push(context, MaterialPageRoute(builder: (context){
-                                      return DetailsScreen(isMovieModel: false,moviesPaginationList: searchedMovies,movieId: searchedMovies.id,trailerId: searchedMovies.trailerId,isTrailerIdNull: false,);
+                                      return DetailsScreen(isMovieModel: false,movieId: movie.id,trailerId: movie.trailerId,
+                                        isTrailerIdNull: false, backDropPath: movie.backdropPath,language: movie.originalLanguage,
+                                        title: movie.title, releaseDate: movie.releaseDate, posterPath: movie.posterPath,
+                                        voteAverage: movie.voteAverage, overView: movie.overview,
+                                      );
                                     }));
                                   }else{
                                     ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
                                     Navigator.push(context, MaterialPageRoute(builder: (context){
-                                      return DetailsScreen(isMovieModel: false,moviesPaginationList: searchedMovies,movieId: searchedMovies.id,isTrailerIdNull: true,);
+                                      return DetailsScreen(isMovieModel: false,movieId: movie.id,
+                                        isTrailerIdNull: true, backDropPath: movie.backdropPath,language: movie.originalLanguage,
+                                        title: movie.title, releaseDate: movie.releaseDate, posterPath: movie.posterPath,
+                                        voteAverage: movie.voteAverage, overView: movie.overview,);
                                     }));
                                   }
                                 },
@@ -176,7 +169,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                 child: CachedNetworkImage(
                                                   height: screenSize.height / 4.5,
                                                   width: screenSize.width / 3,
-                                                  imageUrl: "https://image.tmdb.org/t/p/w200${searchedMovies.posterPath}",
+                                                  imageUrl: "https://image.tmdb.org/t/p/w200${movie.posterPath}",
                                                   fit: BoxFit.cover,
                                                 ),
                                               ),
@@ -189,24 +182,20 @@ class _SearchScreenState extends State<SearchScreen> {
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      searchedMovies.title,
+                                                      movie.title,
                                                       //  popularMovies.voteAverage.toString(),
                                                       style: theme.textTheme.subtitle1,
                                                       overflow: TextOverflow.ellipsis,
                                                     ),
                                                     Text(
-                                                      searchedMovies.releaseDate,
+                                                      movie.releaseDate,
                                                       //  popularMovies.voteAverage.toString(),
                                                       style: theme.textTheme.subtitle2,
                                                       overflow: TextOverflow.ellipsis,
                                                     ),
                                                     SizedBox(height: screenSize.height * 0.01),
                                                     Text(
-                                                      //widget.movieModel.title ?? widget.moviesPaginationList.title ?? "",
-                                                      // widget.isMovieModel
-                                                      //     ? widget.movieModel.overview
-                                                      //     : widget.moviesPaginationList.overview,
-                                                      searchedMovies.overview,
+                                                      movie.overview,
                                                       style: theme.textTheme.bodyText1,
                                                       textAlign: TextAlign.left,
                                                       maxLines: 2,
@@ -221,9 +210,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                         Container(
                                                           padding: EdgeInsets.only(left: 5.0),
                                                           child: Text(
-                                                            // person//     .knowForDepartment
-                                                            // popularMovies.voteAverage.toString(),
-                                                            searchedMovies.voteAverage.toString(),
+                                                            movie.voteAverage.toString(),
                                                             style: theme.textTheme.subtitle2.copyWith(
                                                                 color:  AppColors.secondWhite),
                                                           ),
@@ -253,12 +240,4 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-  // _onSearchChanged() {
-  //   if (_debounce?.isActive ?? false) _debounce.cancel();
-  //   _debounce = Timer(const Duration(milliseconds: 500), () {
-  //     // do something with _searchQuery.text
-  //     onTextChanged(_searchQuery.text);
-  //     print('CustomSearchBar : ' + _searchQuery.text);
-  //   });
-  // }
 }
