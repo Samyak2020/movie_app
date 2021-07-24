@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:movie_watchlist_app/homescreen/home_screen.dart';
 import 'package:movie_watchlist_app/login/login_screen.dart';
+import 'package:movie_watchlist_app/splash/splash_screen.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
 import 'package:movie_watchlist_app/utilities/connectivity.dart';
 import 'package:movie_watchlist_app/watchlist/watchlist_screen.dart';
@@ -17,23 +18,9 @@ class AuthServices{
     return StreamBuilder(
         stream: _auth.authStateChanges(),
         builder: (BuildContext context, snapshot) {
-          internetConnectionUtils.checkInternetConnection().then((isConnected) {
-            if(isConnected){
-              if (snapshot.hasData) {
-            return HomeScreen();
-          } else{
-            return LoginScreen();
-          }
-            }else{
-              return WatchlistScreen();
-          }}
-          );
-          if (snapshot.hasData) {
-            return HomeScreen();
-          } else{
-            return LoginScreen();
-          }
-        });
+          return snapshot.hasData ?  HomeScreen() :  LoginScreen();
+        }
+        );
   }
 
 
@@ -52,7 +39,6 @@ class AuthServices{
             prefs.setString('email', userCredential.user.email);
 
             var userEmail = prefs.getString('email');
-            print("User email is $userEmail at signUp");
 
             Navigator.push(context, MaterialPageRoute(builder: (context)=> HomeScreen(isLoggedInAs: userEmail,)));
           }
@@ -65,9 +51,11 @@ class AuthServices{
 
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
-        print('The password provided is too weak.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          customSnackBarWidget(text: "The password provided is too weak."));
       } else if (e.code == 'email-already-in-use') {
-        print('The account already exists for that email.');
+        ScaffoldMessenger.of(context).showSnackBar(
+            customSnackBarWidget(text: "The account already exists for that email."));
       }
     } catch (e) {
       print(e);
@@ -89,7 +77,6 @@ class AuthServices{
             prefs.setString('email', userCredential.user.email);
 
             var userId = prefs.getString('userID');
-            print("User email is $userId at signIn");
 
             Navigator.push(context, MaterialPageRoute(builder: (context)=> HomeScreen()));
 
@@ -106,9 +93,12 @@ class AuthServices{
 
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
-        print('No user found for that email.');
+        ScaffoldMessenger.of(context).showSnackBar(
+            customSnackBarWidget(text: "No user found for that email."));
+
       } else if (e.code == 'wrong-password') {
-        print('Wrong password provided for that user.');
+        ScaffoldMessenger.of(context).showSnackBar(
+            customSnackBarWidget(text: "Wrong password provided for that user."));
       }
     }
   }

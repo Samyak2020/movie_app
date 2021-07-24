@@ -12,14 +12,11 @@ import 'package:movie_watchlist_app/data/models/trailer_model.dart';
 import 'package:movie_watchlist_app/data/repo/authservices/auth_servies.dart';
 import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_castlist.dart';
 import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_trailer.dart';
-import 'package:movie_watchlist_app/db/movie_modelDB.dart';
-import 'package:movie_watchlist_app/db/movies_db.dart';
 import 'package:movie_watchlist_app/detailsscreen/details_screen.dart';
 import 'package:movie_watchlist_app/bloc/bloc_collection.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
 import 'package:movie_watchlist_app/utilities/constants.dart';
 import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
-import 'package:sqflite/sqflite.dart';
 
 FirebaseAuth auth = FirebaseAuth.instance;
 
@@ -36,20 +33,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool isTrendingSelected = true;
   bool isHomeScreen = true;
-  String _imageUrl;
+ // String _imageUrl;
   String userEmail = auth.currentUser.email;
   String uid = auth.currentUser.uid;
+  var subscription;
 
 
 
   @override
   void initState() {
     // TODO: implement initState
+    //internetConnectionUtils.checkConnection().then((value) => hasConnection = value);
     homeScreenBloc.showSelectedCategory(category: "trending");
-    homeScreenBloc.fetchMoviesListStream();
+    homeScreenBloc.fetchMoviesListStream(isWishlistedFlag: false);
     homeScreenBloc.fetchTopRatedMoviesListStream();
-    //homeScreenBloc.getMovieWatchlistedStatus();
-    homeScreenBloc.insertMovieToDb(isInDb: false);
+    homeScreenBloc.fetchOfflineWatchListMovies();
+    homeScreenBloc.checkInternetConnection();
+
     super.initState();
   }
 
@@ -82,107 +82,171 @@ class _HomeScreenState extends State<HomeScreen> {
             canvasColor: Colors.black.withOpacity(0.7),
           ),
           child: buildDrawer(screenSize, theme,context, isHomeScreen,  loggedInAsEmail:  userEmail)),
-      body: ListView(
-        children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-                          child: Text("Trending",
+      body:  StreamBuilder(
+        stream: homeScreenBloc.checkInternetConnectivityStream,
+        builder: (context, snapshot) {
+          bool hasConnection = snapshot.data;
+          if(hasConnection == true){
+            return ListView(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                            child: Text("Trending",
+                              style: theme.textTheme.subtitle2.copyWith(
+                                  fontSize: isTrendingSelected ? 16 : 14,
+                                  fontWeight: isTrendingSelected ?FontWeight.w900 : FontWeight.w500,
+                                  color: isTrendingSelected ? AppColors.white : AppColors.grey),
+                            ),
+                            onTap: () {
+                              setState(() {
+                                isTrendingSelected = true;
+                                homeScreenBloc.showSelectedCategory(category: "trending");
+                              });
+
+                            }
+                        ),
+                        SizedBox(
+                          width: screenSize.width * 0.2,
+                        ),
+                        GestureDetector(
+                          child: Text("TV",
                             style: theme.textTheme.subtitle2.copyWith(
-                                fontSize: isTrendingSelected ? 16 : 14,
-                                fontWeight: isTrendingSelected ?FontWeight.w900 : FontWeight.w500,
-                                color: isTrendingSelected ? AppColors.white : AppColors.grey),
-                          ),
-                          onTap: () {
+                                fontSize: isTrendingSelected ? 14 : 16,
+                                fontWeight:isTrendingSelected ? FontWeight.w500 : FontWeight.w900,
+                                color: isTrendingSelected ?  AppColors.grey : AppColors.white),),
+                          onTap: (){
                             setState(() {
-                              isTrendingSelected = true;
-                              homeScreenBloc.showSelectedCategory(category: "trending");
+                              isTrendingSelected = false;
+                              homeScreenBloc.showSelectedCategory(category: "tv");
                             });
 
-                          }
-                      ),
-                      SizedBox(
-                        width: screenSize.width * 0.2,
-                      ),
-                      // GestureDetector(
-                      //   child: Text("Upcoming",
-                      //     style: theme.textTheme.subtitle2.copyWith(fontWeight: FontWeight.w700, color: AppColors.secondWhite),),
-                      //   onTap: (){
-                      //     homeScreenBloc.showSelectedCategory(category: "upcoming");
-                      //   },
-                      // ),
-                      GestureDetector(
-                        child: Text("TV",
-                          style: theme.textTheme.subtitle2.copyWith(
-                              fontSize: isTrendingSelected ? 14 : 16,
-                              fontWeight:isTrendingSelected ? FontWeight.w500 : FontWeight.w900,
-                              color: isTrendingSelected ?  AppColors.grey : AppColors.white),),
-                        onTap: (){
-                          setState(() {
-                            isTrendingSelected = false;
-                            homeScreenBloc.showSelectedCategory(category: "tv");
-                          });
+                          },
+                        ),
 
-                        },
+                      ],
+                    ),
+                    SizedBox(
+                      height: screenSize.height * 0.02,
+                    ),
+                    buildCarousel(screenSize: screenSize,
+                      stream: homeScreenBloc.showSelectedCategoryControllerStream,
+                      theme: theme,
+                    ),
+                    SizedBox(
+                      height: screenSize.width * 0.06,
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.035,),
+                  child: Text("Popular",
+                    style: theme.textTheme.subtitle2.copyWith(
+                        fontSize:  16 ,
+                        fontWeight:  FontWeight.w700,
+                        color:  AppColors.secondWhite),
+                  ),
+                ),
+                SizedBox(
+                  height: screenSize.height * 0.01,
+                ),
+                buildPopularMovies(screenSize: screenSize,
+                  stream: homeScreenBloc.popularMoviesResponseStream,
+                  theme: theme,
+                ),
+                SizedBox(
+                  height: screenSize.width * 0.06,
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.035,),
+                  child: Text("Top Rated",
+                    style: theme.textTheme.subtitle2.copyWith(
+                        fontSize:  16 ,
+                        fontWeight:  FontWeight.w700,
+                        color:  AppColors.secondWhite),
+                  ),
+                ),
+                SizedBox(
+                  height: screenSize.height * 0.01,
+                ),
+                buildTopRatedMovies(screenSize: screenSize,theme: theme,
+                  stream: homeScreenBloc.topRatedMoviesResponseStream,),
+                SizedBox(
+                  height: screenSize.height * 0.025,
+                ),
+              ],
+            );
+          }else{
+            return Center(child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Column(
+                  children: [ SizedBox(height: MediaQuery.of(context).size.height * 0.075,),
+                    Container(
+                      child: Icon(
+                        Icons.wifi_off_outlined,
+                        size: screenSize.width * 0.75,
+                        color: Color(0xff3A3B3C),
                       ),
+                    ),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.04,),
+                    Text("No internet connection",  style: theme.textTheme.headline2.copyWith(
+                        fontWeight:  FontWeight.w700,
+                        color:  AppColors.linearGrey),),
+                  ],
+                ),
+                Column(
+                  children: [
+                    TextButton(
+                      style: ButtonStyle(
+                        foregroundColor: MaterialStateProperty.all<Color>(AppColors.white),
+                        backgroundColor: MaterialStateProperty.all<Color>(Color(0xff3A3B3C),),
+                        padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.all(8.0)),
+                      ),
+                      onPressed: (){
+                        homeScreenBloc.checkInternetConnection().then((value){
+                            if(value == true){
 
-                    ],
-                  ),
-                  SizedBox(
-                    height: screenSize.height * 0.02,
-                  ),
-                  buildCarousel(screenSize: screenSize,
-                    stream: homeScreenBloc.showSelectedCategoryControllerStream,
-                    theme: theme,
-                  ),
-                  SizedBox(
-                    height: screenSize.width * 0.06,
-                  ),
-                ],
-              ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.035,),
-            child: Text("Popular",
-              style: theme.textTheme.subtitle2.copyWith(
-                  fontSize:  16 ,
-                  fontWeight:  FontWeight.w700,
-                  color:  AppColors.secondWhite),
-            ),
-          ),
-          SizedBox(
-            height: screenSize.height * 0.01,
-          ),
-          buildPopularMovies(screenSize: screenSize,
-            stream: homeScreenBloc.popularMoviesResponseStream,
-            theme: theme,
-          ),
-          SizedBox(
-            height: screenSize.width * 0.06,
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.035,),
-            child: Text("Top Rated",
-              style: theme.textTheme.subtitle2.copyWith(
-                  fontSize:  16 ,
-                  fontWeight:  FontWeight.w700,
-                  color:  AppColors.secondWhite),
-            ),
-          ),
-          SizedBox(
-            height: screenSize.height * 0.01,
-          ),
-          buildTopRatedMovies(screenSize: screenSize,theme: theme,
-            stream: homeScreenBloc.topRatedMoviesResponseStream,),
-          SizedBox(
-            height: screenSize.height * 0.025,
-          ),
-        ],
-      ),
-    );
+                                homeScreenBloc.showSelectedCategory(category: "trending");
+                                homeScreenBloc.fetchMoviesListStream(isWishlistedFlag: false);
+                                homeScreenBloc.fetchTopRatedMoviesListStream();
+                                homeScreenBloc.fetchOfflineWatchListMovies();
+                            }else{
+                              ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant connect"));
+                            }
+                        });
+                      },
+                      child: Text('  TRY AGAIN  ', style: theme.textTheme.button.copyWith(
+                          fontSize:  14 ,
+                          fontWeight:  FontWeight.w700,
+                          color:  AppColors.secondWhite),),
+                    ),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.02,),
+                    TextButton(
+                      style: ButtonStyle(
+                        foregroundColor: MaterialStateProperty.all<Color>(AppColors.white),
+                        backgroundColor: MaterialStateProperty.all<Color>(AppColors.blue),
+                        padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.all(8.0)),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pushNamed(ScreenName.WatchlistScreen);
+                      },
+                      child: Text(' GO TO WATCHLIST ', style: theme.textTheme.button.copyWith(
+                          fontSize:  14 ,
+                          fontWeight:  FontWeight.w700,
+                          color:  AppColors.secondWhite),),
+                    ),
+                  ],
+                ),
+              ],
+            ));
+          }
+        }
+      ) );
   }
 
   StreamBuilder<List<MovieModel>> buildCarousel({Size screenSize, Stream stream, ThemeData theme} ) {
@@ -200,7 +264,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   CarouselSlider(
                     items: movies.map((i) {
-                      _imageUrl = '${ApiConstants.BASE_IMAGE_URL}${i.posterPath}';
                       return Builder(
                         builder: (BuildContext context) {
                           return Stack(
@@ -209,28 +272,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onTap : () async{
                                   await castListRepository.fetchCastsList(i.id);
                                   List<Trailer> trailerId = await trailerListRepository.fetchTrailers(i.id);
-                                  if(trailerId != null){
+                                  if(trailerId != null && trailerId.isNotEmpty){
                                     i.trailerId = trailerId.first.key;
                                     Navigator.push(context, MaterialPageRoute(builder: (context){
                                       return DetailsScreen(isMovieModel: true,
-                                          movieModel: i,
                                           title: isTrendingSelected ? i.title :  i.name,
                                           releaseDate: isTrendingSelected ? i.releaseDate :  i.fistAirDate,
-                                          movieId: i.id,
-                                          trailerId: i.trailerId,
-                                        isTrailerIdNull: false,
+                                        movieId: i.id,trailerId: i.trailerId,
+                                        isTrailerIdNull: false, backDropPath: i.backdropPath,language: i.originalLanguage,
+                                        posterPath: i.posterPath,
+                                        voteAverage: i.voteAverage, overView: i.overview,
                                       );
                                     }));
                                   }else{
                                     ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
                                     Navigator.push(context, MaterialPageRoute(builder: (context){
                                       return DetailsScreen(isMovieModel: true,
-                                          movieModel: i,
-                                          title: isTrendingSelected ? i.title :  i.name,
-                                          releaseDate: isTrendingSelected ? i.releaseDate :  i.fistAirDate,
-                                          movieId: i.id,
-                                          trailerId: i.trailerId,
-                                          isTrailerIdNull: true,
+                                        title: isTrendingSelected ? i.title :  i.name,
+                                        releaseDate: isTrendingSelected ? i.releaseDate :  i.fistAirDate,
+                                        movieId: i.id,isTrailerIdNull: true, backDropPath: i.backdropPath,language: i.originalLanguage,
+                                        posterPath: i.posterPath, voteAverage: i.voteAverage, overView: i.overview,
                                       );
                                     }));
                                   }
@@ -274,16 +335,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 ),
                               ),
-                              Positioned(
-                                top: 12.0,
-                                right: 12.0,
-                                child: GestureDetector(
-                                  child: Icon(Icons.add_box_outlined,
-                                    color: AppColors.secondWhite,
-                                    size: 30.0,
-                                  ),
-                                ),
-                              ),
                             ]
                           );
                         },
@@ -298,7 +349,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       autoPlayAnimationDuration: Duration(milliseconds: 1500),
                       autoPlayCurve: Curves.easeInOut,
                       enlargeCenterPage: true,
-                      // onPageChanged: callbackFunction,
                       scrollDirection: Axis.horizontal,
                     ),),
                 ],
@@ -321,7 +371,7 @@ class _HomeScreenState extends State<HomeScreen> {
               scrollDirection: Axis.horizontal,
               itemCount: movies.length,
               shrinkWrap: true,
-               itemBuilder: (context, index){
+               itemBuilder: (context, index) {
                  MoviesPaginationList popularMovies = movies[index];
                   return Stack(
                     children: [
@@ -329,16 +379,29 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap : () async{
                           await castListRepository.fetchCastsList(popularMovies.id);
                           List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
-                          print("the trailer id is $trailerId");
-                          if(trailerId != null){
+                          if(trailerId != null && trailerId.isNotEmpty){
                             popularMovies.trailerId = trailerId.first.key;
                             Navigator.push(context, MaterialPageRoute(builder: (context){
-                              return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,trailerId: popularMovies.trailerId,isTrailerIdNull: false,);
+                              return DetailsScreen(isMovieModel: false,
+                                  title: popularMovies.title,
+                                  releaseDate: popularMovies.releaseDate,
+                                  movieId: popularMovies.id,trailerId: popularMovies.trailerId,
+                                  isTrailerIdNull: false, backDropPath:popularMovies.backdropPath,language: popularMovies.originalLanguage,
+                                  posterPath: popularMovies.posterPath,
+                                  voteAverage: popularMovies.voteAverage, overView: popularMovies.overview,
+                              );
                             }));
                           }else{
                             ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
                             Navigator.push(context, MaterialPageRoute(builder: (context){
-                              return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,isTrailerIdNull: true,);
+                              return DetailsScreen(
+                                isMovieModel: false,movieId: popularMovies.id,isTrailerIdNull: true,
+                                title: popularMovies.title,
+                                releaseDate: popularMovies.releaseDate,
+                                backDropPath:popularMovies.backdropPath,language: popularMovies.originalLanguage,
+                                posterPath: popularMovies.posterPath,
+                                voteAverage: popularMovies.voteAverage, overView: popularMovies.overview,
+                              );
                             }));
                           }
 
@@ -349,7 +412,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: EdgeInsets.fromLTRB(
                                   screenSize.width * 0.025, 0.0, 0.0, 0.0),
                               child: Stack(
-                                // crossAxisAlignment: CrossAxisAlignment.start,
                                 alignment: Alignment.bottomLeft,
                                 children: <Widget>[
                                   Column(
@@ -427,67 +489,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ],
                                   ),
-                                  Positioned(
-                                    top: 3.2,
-                                    left: 4,
-                                    child: Container(
-                                      height:50.0,
-                                      width: screenSize.width / 2.5,
-                                      foregroundDecoration: BoxDecoration(
-                                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                                        gradient: LinearGradient(
-                                          colors: [Colors.black54, Colors.transparent, Colors.transparent, Colors.transparent],
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          stops: [0, 0.9, 0.75, 1],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
                                 ],
                               ),
                             ),
                           ],
                         ),
                       ),
-                            Positioned(
-                            top: 10.0,
-                            right: 10.0,
-                            child: GestureDetector(
-                              onTap: ()  async {
-                                //homeScreenBloc.getMovieWatchlistedStatus(uid: uid, movieId: popularMovies.id);
-
-                                // if(snapshot.data){
-                                  print("Added to db ? yes");
-                                  await MovieDB.db.insertData(MovieDBModel(
-                                      posterPath:  popularMovies.posterPath,
-                                      title :  popularMovies.title,
-                                      movieId:  popularMovies.id,
-                                      uid: uid,
-                                      overview: popularMovies.overview,
-                                      voteAverage: popularMovies.voteAverage,
-                                      releaseDate:  popularMovies.releaseDate,
-                                      isWishListed: 1
-                                  ));
-                                // }else{
-                                //   await MovieDB.db.deleteMovie(id:  popularMovies.id);
-                                //   print("UHMMMM");
-                              //  }
-
-                              },
-                              child:  Icon(Icons.check_box,
-                                color: AppColors.blue,
-                                size: 30.0,
-                              // ) : Icon(Icons.add_box_outlined,
-                              //   color: AppColors.secondWhite,
-                              //   size: 30.0,
-                              ),
-                              // child: Icon(Icons.add_box_outlined,
-                              //   color: AppColors.secondWhite,
-                              //   size: 30.0,
-                              // ),
-                            ),
-                          ),
                     ],
                   );
                }
@@ -520,16 +527,29 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap : () async{
                           await castListRepository.fetchCastsList(popularMovies.id);
                           List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
-                         // String trailerId = await trailerListRepository.fetchTrailersId(popularMovies.id);
-                          if(trailerId != null){
+                          if(trailerId != null && trailerId.isNotEmpty){
                             popularMovies.trailerId = trailerId.first.key;
                             Navigator.push(context, MaterialPageRoute(builder: (context){
-                              return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,trailerId: popularMovies.trailerId,isTrailerIdNull: false,);
+                              return DetailsScreen(
+                                movieId: popularMovies.id,trailerId: popularMovies.trailerId,isTrailerIdNull: false,
+                                title: popularMovies.title,
+                                releaseDate: popularMovies.releaseDate,
+                                backDropPath:popularMovies.backdropPath,language: popularMovies.originalLanguage,
+                                posterPath: popularMovies.posterPath,
+                                voteAverage: popularMovies.voteAverage, overView: popularMovies.overview,
+                              );
                             }));
                           }else{
                             ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
                             Navigator.push(context, MaterialPageRoute(builder: (context){
-                              return DetailsScreen(isMovieModel: false,moviesPaginationList: popularMovies,movieId: popularMovies.id,isTrailerIdNull: true,);
+                              return DetailsScreen(
+                                isMovieModel: false,movieId: popularMovies.id,isTrailerIdNull: true,
+                                title: popularMovies.title,
+                                releaseDate: popularMovies.releaseDate,
+                                backDropPath:popularMovies.backdropPath,language: popularMovies.originalLanguage,
+                                posterPath: popularMovies.posterPath,
+                                voteAverage: popularMovies.voteAverage, overView: popularMovies.overview,
+                              );
                             }));
                           }
 
@@ -540,7 +560,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: EdgeInsets.fromLTRB(
                                   screenSize.width * 0.025, 0.0, 0.0, 0.0),
                               child: Stack(
-                                // crossAxisAlignment: CrossAxisAlignment.start,
                                 alignment: Alignment.bottomLeft,
                                 children: <Widget>[
                                   Column(
@@ -607,7 +626,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                           Container(
                                             padding: EdgeInsets.only(left: 5.0),
                                             child: Text(
-                                              // person//     .knowForDepartment
                                               popularMovies.voteAverage.toString(),
                                               style: theme.textTheme.subtitle2.copyWith(
                                                   fontWeight:  FontWeight.w400,
@@ -618,37 +636,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ],
                                   ),
-                                  Positioned(
-                                    top: 3.2,
-                                    left: 4,
-                                    child: Container(
-                                      height:50.0,
-                                      width: screenSize.width / 2.5,
-                                      foregroundDecoration: BoxDecoration(
-                                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                                        gradient: LinearGradient(
-                                          colors: [Colors.black54, Colors.transparent, Colors.transparent, Colors.transparent],
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          stops: [0, 0.9, 0.75, 1],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
                                 ],
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                      Positioned(
-                        top: 10.0,
-                        right: 10.0,
-                        child: GestureDetector(
-                          child: Icon(Icons.add_box_outlined,
-                            color: AppColors.secondWhite,
-                            size: 30.0,
-                          ),
                         ),
                       ),
                     ],
@@ -659,6 +650,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
     );
   }
+
 }
 Drawer buildDrawer(Size screenSize, ThemeData theme, BuildContext context, bool isHomeScreen, {String loggedInAsEmail}) {
   return Drawer(
@@ -700,7 +692,7 @@ Drawer buildDrawer(Size screenSize, ThemeData theme, BuildContext context, bool 
             title: Text('Home',
               style: theme.textTheme.subtitle1),
             onTap: () {
-              isHomeScreen ? Navigator.pop(context) : Navigator.of(context).pushNamed(ScreenName.HomeScreen);
+              isHomeScreen ? Navigator.pop(context) : Navigator.of(context).popAndPushNamed(ScreenName.HomeScreen);
             },
           ),
         ),
@@ -728,7 +720,6 @@ Drawer buildDrawer(Size screenSize, ThemeData theme, BuildContext context, bool 
           trailing: Icon(Icons.logout, color:AppColors.red,),
           onTap: () async{
             await authServices.signOut(context: context);
-            print("Loggin out ");
           },
         ),
       ],

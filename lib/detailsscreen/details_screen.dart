@@ -8,22 +8,35 @@ import 'package:movie_watchlist_app/data/models/cast_list_model.dart';
 import 'package:movie_watchlist_app/data/models/corousellistmodel/movie_model.dart';
 import 'package:movie_watchlist_app/data/models/movieslistmodels/popular_movies_model.dart';
 import 'package:movie_watchlist_app/bloc/bloc_collection.dart';
+import 'package:movie_watchlist_app/db/movie_modelDB.dart';
+import 'package:movie_watchlist_app/db/movies_db.dart';
+import 'package:movie_watchlist_app/homescreen/home_screen.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
+import 'package:movie_watchlist_app/utilities/connectivity.dart';
 import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DetailsScreen extends StatefulWidget {
 
-  DetailsScreen({this.isMovieModel, this.moviesPaginationList, this.movieModel,  this.movieId,this.title, this.releaseDate,this.trailerId, this.isTrailerIdNull = false});
+  DetailsScreen({this.isMovieModel,@required this.overView,@required this.language,@required this.voteAverage,@required this.backDropPath,
+  @required this.movieId,@required this.title,@required this.releaseDate,@required this.trailerId,
+  this.isTrailerIdNull = false,this.isWishListed = false,@required this.posterPath, this.hasConnection = true});
 
-  MovieModel movieModel;
-  MoviesPaginationList moviesPaginationList;
+
   bool isMovieModel;
   int movieId;
   String title;
   String releaseDate;
   String trailerId;
   bool isTrailerIdNull;
+  bool isWishListed;
+  String backDropPath;
+  String posterPath;
+  String language;
+  double voteAverage;
+  String overView;
+  bool hasConnection;
+
 
   @override
   _DetailsScreenState createState() => _DetailsScreenState();
@@ -33,6 +46,7 @@ class DetailsScreen extends StatefulWidget {
 class _DetailsScreenState extends State<DetailsScreen> {
   @override
   Future<void> _launched;
+  String uid = auth.currentUser.uid;
   String _youtubeUrlConstant = 'https://www.youtube.com/embed/';
 
   Future<void> _launchInBrowser(String url) async {
@@ -60,7 +74,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    homeScreenBloc.fetchCastList(widget.movieId);
+      if(widget.hasConnection == true) {
+        homeScreenBloc.fetchCastList(widget.movieId);
+        homeScreenBloc.movieIsInTheDb(movieId: widget.movieId);
+      }
   }
 
 
@@ -86,16 +103,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
             Navigator.pop(context);
           },
         ),
-        actions: <Widget>[
-          IconButton(
-            iconSize: 24.0,
-            icon: Icon(
-              Icons.add_box_outlined,
-              color: AppColors.white,
-            ),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         //children: [
@@ -105,9 +112,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
               width: double.infinity,
               height: screenSize.height / 2.5,
               child: CachedNetworkImage(
-                                imageUrl: 'https://image.tmdb.org/t/p/w200${widget.isMovieModel
-                    ? widget.movieModel.backdropPath
-                    : widget.moviesPaginationList.backdropPath}',
+                                imageUrl: 'https://image.tmdb.org/t/p/w200${widget.backDropPath}',
                 imageBuilder: (context, imageProvider) {
                   return Container(
                     width: screenSize.width / 2.5,
@@ -160,8 +165,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
               ),
             ),
             Positioned(
-              top:  screenSize.height / 5.6,
-              left: screenSize.width / 2.3,
+              top:  screenSize.height / 6,
+              left: screenSize.width / 2.35,
               child: GestureDetector(
                 onTap: () async {
                   if(widget.isTrailerIdNull != true){
@@ -171,27 +176,43 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
                   }
                 },
-                child: widget.isTrailerIdNull ? Icon(
-                  Icons.browser_not_supported_rounded,
-                  color: AppColors.white,
-                  size: 80,
-                ):Icon(
-                  Icons.play_circle_outline,
-                  color: AppColors.white,
-                  size: 80,
+                child: widget.isTrailerIdNull ? Container(
+                  padding: const EdgeInsets.all(2.0),
+                  decoration: BoxDecoration(borderRadius:
+                  BorderRadius.circular(50.0),
+                    border: Border.all(
+                        color: AppColors.blue,
+                        width: 5.0
+                    ),
+                    color: AppColors.blue,),
+                  child: Icon(
+                    Icons.image_not_supported_sharp,
+                    color: AppColors.white,
+                    size: 60.0,
+                  ),
+                ):Container(
+                  padding: const EdgeInsets.all(2.0),
+                  decoration: BoxDecoration(borderRadius:
+                  BorderRadius.circular(50.0),
+                    border: Border.all(
+                        color: AppColors.blue,
+                        width: 5.0
+                    ),
+                    color: AppColors.blue,),
+                  child: Icon(
+                    Icons.play_arrow,
+                    color: AppColors.white,
+                    size: 60.0,
+                  ),
                 ),
               ),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                // builderTrailer(
-                //   screenSize: screenSize,
-                //   theme: theme,
-                //   stream: homeScreenBloc.trailerListResponseStream,
                 // ),
                 SizedBox(
-                  height: screenSize.height / 2.5,
+                  height: screenSize.height / 2.4,
                 ),
                 Container(
                   decoration: BoxDecoration(
@@ -206,9 +227,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: screenSize.height * 0.025, horizontal: screenSize.width * 0.05),
                           child: Text(
-                            //widget.movieModel.title ?? widget.moviesPaginationList.title ?? "",
-                            widget.isMovieModel ? widget.title : widget
-                                .moviesPaginationList.title,
+                            widget.title,
                             style: theme.textTheme.headline2.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.white),
@@ -222,8 +241,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           children: [
                             Text(
                               //widget.movieModel.title ?? widget.moviesPaginationList.title ?? "",
-                              widget.isMovieModel ? widget.releaseDate : widget
-                                  .moviesPaginationList.releaseDate,
+                              widget.releaseDate,
                               style: theme.textTheme.subtitle2,
                               textAlign: TextAlign.center,
                             ),
@@ -235,9 +253,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                             ),
                             Text(
                               //widget.movieModel.title ?? widget.moviesPaginationList.title ?? "",
-                              widget.isMovieModel ? widget.movieModel
-                                  .originalLanguage.toUpperCase() : widget
-                                  .moviesPaginationList.originalLanguage
+                              widget.language
                                   .toUpperCase(),
                               style: theme.textTheme.subtitle2,
                               textAlign: TextAlign.center,
@@ -257,9 +273,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                   padding: const EdgeInsets.only(left: 4.0),
                                   child: Text(
                                     //widget.movieModel.title ?? widget.moviesPaginationList.title ?? "",
-                                    widget.isMovieModel ? widget.movieModel
-                                        .voteAverage.toString() : widget
-                                        .moviesPaginationList.voteAverage
+                                    widget.voteAverage
                                         .toString(),
                                     style: theme.textTheme.subtitle2,
                                     textAlign: TextAlign.center,
@@ -285,9 +299,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         padding: EdgeInsets.fromLTRB(screenSize.width * 0.06, 10.0, screenSize.width * 0.05, 0),
                         child: Text(
                           //widget.movieModel.title ?? widget.moviesPaginationList.title ?? "",
-                          widget.isMovieModel
-                              ? widget.movieModel.overview
-                              : widget.moviesPaginationList.overview,
+                          widget.overView,
                           style: theme.textTheme.bodyText1,
                           textAlign: TextAlign.left,
                         ),
@@ -296,7 +308,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         padding: EdgeInsets.fromLTRB(16.0, 24.0, 23.0, 0),
                         child: Text(
                           //widget.movieModel.title ?? widget.moviesPaginationList.title ?? "",
-                          "Cast",
+                          widget.hasConnection ? "Cast" : "",
                           style: theme.textTheme.subtitle1.copyWith(
                               color: AppColors.white),
                           textAlign: TextAlign.left,
@@ -308,13 +320,92 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ],
                   ),
                 ),
-                FutureBuilder<void>(future: _launched, builder: _launchStatus),
               ],
             ),
+            Positioned(
+                top:  screenSize.height / 2.8,
+                left: screenSize.width / 1.25,
+                child: buildIconButton(theme)),
           ],
         ),
         //],
       ),
+    );
+  }
+
+  Widget buildIconButton(ThemeData theme) {
+    return  StreamBuilder(
+      stream: homeScreenBloc.movieIsInDb,
+      builder: (context, snapshot) {
+        MovieDBModel movie = snapshot.data;
+        if( snapshot.connectionState == ConnectionState.waiting){
+          Center(child: CircularProgressIndicator());
+        }// if(movieDBModel != null && movieDBModel.movieId == widget.movieId){
+
+          if(movie != null && movie.movieId == widget.movieId && movie.isWishListed == 1){
+            return GestureDetector(
+              onTap: () async {
+                await MovieDB.db.deleteMovie(id : widget.movieId);
+                ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Removed from Watchlist"));
+                homeScreenBloc.movieIsInTheDb();
+              },
+              child: Container(
+                padding: const EdgeInsets.all(2.0),
+                decoration: BoxDecoration(borderRadius:
+                BorderRadius.circular(50.0),
+                  border: Border.all(
+                      color: AppColors.blue,
+                      width: 5.0
+                  ),
+                  color: AppColors.blue,),
+                child: Icon(
+                  Icons.check,
+                  color: AppColors.white,
+                  size: 50.0,
+                ),
+              ),
+            );
+          }else {
+            return GestureDetector(
+              onTap: () async{
+                await MovieDB.db.insertData(
+                  MovieDBModel(
+                      posterPath:  widget.posterPath,
+                      title :  widget.title,
+                      movieId:  widget.movieId,
+                      uid: uid,
+                      backDropPath: widget.backDropPath,
+                      language: widget.language,
+                      overview: widget.overView,
+                      voteAverage: widget.voteAverage,
+                      releaseDate:  widget.releaseDate,
+                      isWishListed: 1,
+                    trailerId: widget.trailerId
+                  ),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Added To Watchlist"));
+                homeScreenBloc.movieIsInTheDb(movieId: widget.movieId);
+                // }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(2.0),
+                decoration: BoxDecoration(borderRadius:
+                BorderRadius.circular(50.0),
+                  border: Border.all(
+                    color: AppColors.blue,
+                    width: 5.0
+                  ),
+                  color: AppColors.blue
+                ),
+                child: Icon(
+                  Icons.add,
+                  color: AppColors.white,
+                  size: 50.0,
+                ),
+              ),
+            );
+          }
+      }
     );
   }
 
@@ -324,8 +415,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
         stream: stream,
         builder: (context, snapshot) {
           List<Cast> castList = snapshot.data;
-          return snapshot.connectionState == ConnectionState.waiting ?
-          CircularProgressIndicator() : Container(
+          if (snapshot.hasData && snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else if (snapshot.hasData) {
+            return Container(
             padding: EdgeInsets.only(left: screenSize.width * 0.04),
             height: screenSize.height * 0.4,
             child: ListView.builder(
@@ -343,7 +436,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
                             padding: EdgeInsets.fromLTRB(
                                 screenSize.width * 0.025, 0.0, 0.0, 0.0),
                             child: Stack(
-                              // crossAxisAlignment: CrossAxisAlignment.start,
                               alignment: Alignment.bottomLeft,
                               children: <Widget>[
                                 Column(
@@ -428,7 +520,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                         ),
                                       ),
                                     ),
-
                                   ],
                                 ),
                               ],
@@ -441,6 +532,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 }
             ),
           );
+          }else{
+            return SizedBox();
+          }
         }
     );
   }
