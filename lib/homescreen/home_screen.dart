@@ -86,7 +86,10 @@ class _HomeScreenState extends State<HomeScreen> {
         stream: homeScreenBloc.checkInternetConnectivityStream,
         builder: (context, snapshot) {
           bool hasConnection = snapshot.data;
-          if(hasConnection == true){
+          if( snapshot.connectionState == ConnectionState.waiting){
+            return CircularProgressIndicator();
+          }else {
+            if(hasConnection == true){
             return ListView(
               children: [
                 Column(
@@ -209,15 +212,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       onPressed: (){
                         homeScreenBloc.checkInternetConnection().then((value){
-                            if(value == true){
+                          if(value == true){
 
-                                homeScreenBloc.showSelectedCategory(category: "trending");
-                                homeScreenBloc.fetchMoviesListStream(isWishlistedFlag: false);
-                                homeScreenBloc.fetchTopRatedMoviesListStream();
-                                homeScreenBloc.fetchOfflineWatchListMovies();
-                            }else{
-                              ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant connect"));
-                            }
+                            homeScreenBloc.showSelectedCategory(category: "trending");
+                            homeScreenBloc.fetchMoviesListStream(isWishlistedFlag: false);
+                            homeScreenBloc.fetchTopRatedMoviesListStream();
+                            homeScreenBloc.fetchOfflineWatchListMovies();
+                          }else{
+                            ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant connect"));
+                          }
                         });
                       },
                       child: Text('  TRY AGAIN  ', style: theme.textTheme.button.copyWith(
@@ -243,7 +246,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ],
-            ));
+            ));}
+
           }
         }
       ) );
@@ -543,6 +547,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
                             Navigator.push(context, MaterialPageRoute(builder: (context){
                               return DetailsScreen(
+                                trailerId: "",
                                 isMovieModel: false,movieId: popularMovies.id,isTrailerIdNull: true,
                                 title: popularMovies.title,
                                 releaseDate: popularMovies.releaseDate,

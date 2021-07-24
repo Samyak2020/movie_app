@@ -8,12 +8,9 @@ import 'package:movie_watchlist_app/utilities/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async{
-  SystemChrome.setSystemUIOverlayStyle(
-    SystemUiOverlayStyle(
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      //systemNavigationBarColor: Colors.transparent,
-    ),
-  );
+      statusBarIconBrightness: Brightness.light));
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -34,12 +31,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: appTheme(),
-      //initialRoute: ScreenName.HomeScreen,
       home: authServices.handleAuth(),
-      //initialRoute: ScreenName.WatchlistScreen,
-      //initialRoute: ScreenName.DetailsScreen,
-     // home: SearchBarDemoHome(),
-     // home: SearchScreen(),
      onGenerateRoute: RouteGenerator.generateRoute,
     );
   }

@@ -19,7 +19,7 @@ import 'package:url_launcher/url_launcher.dart';
 class DetailsScreen extends StatefulWidget {
 
   DetailsScreen({this.isMovieModel,@required this.overView,@required this.language,@required this.voteAverage,@required this.backDropPath,
-  @required this.movieId,@required this.title,@required this.releaseDate,@required this.trailerId,
+  @required this.movieId,@required this.title,@required this.releaseDate,this.trailerId,
   this.isTrailerIdNull = false,this.isWishListed = false,@required this.posterPath, this.hasConnection = true});
 
 
