@@ -5,6 +5,7 @@ Learn about the movie you want to watch,search for a movie you heard about,
 watch trailer, watchlist them and revist them even if you dont have access to the internet.
 
 # Tech's used:
+* Figma for UI designing, development with Flutter in Android Studio
 * Firebase authentication
 * API provided by TMBD at https://developers.themoviedb.org/3/getting-started/introduction
 * SQFlite for offline data storage 
