@@ -189,7 +189,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: screenSize.height * 0.01,
                 ),
                 buildTopRatedMovies(screenSize: screenSize,theme: theme,
-                  stream: homeScreenBloc.topRatedMoviesResponseStream,),
+                  stream: homeScreenBloc.topRatedMoviesResponseStream,
+                ),
                 SizedBox(
                   height: screenSize.height * 0.025,
                 ),
@@ -286,31 +287,32 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               GestureDetector(
                                 onTap : () async{
-                                  await castListRepository.fetchCastsList(i.id);
-                                  List<Trailer> trailerId = await trailerListRepository.fetchTrailers(i.id);
-                                  if(trailerId != null && trailerId.isNotEmpty){
-                                    i.trailerId = trailerId.first.key;
-                                    Navigator.push(context, MaterialPageRoute(builder: (context){
-                                      return DetailsScreen(isMovieModel: true,
+                                  await homeScreenBloc.checkInternetConnection();
+                                    await castListRepository.fetchCastsList(i.id);
+                                    List<Trailer> trailerId = await trailerListRepository.fetchTrailers(i.id);
+                                    if(trailerId != null && trailerId.isNotEmpty){
+                                      i.trailerId = trailerId.first.key;
+                                      Navigator.push(context, MaterialPageRoute(builder: (context){
+                                        return DetailsScreen(isMovieModel: true,
                                           title: isTrendingSelected ? i.title :  i.name,
                                           releaseDate: isTrendingSelected ? i.releaseDate :  i.fistAirDate,
-                                        movieId: i.id,trailerId: i.trailerId,
-                                        isTrailerIdNull: false, backDropPath: i.backdropPath,language: i.originalLanguage,
-                                        posterPath: i.posterPath,
-                                        voteAverage: i.voteAverage, overView: i.overview,
-                                      );
-                                    }));
-                                  }else{
-                                    ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
-                                    Navigator.push(context, MaterialPageRoute(builder: (context){
-                                      return DetailsScreen(isMovieModel: true,
-                                        title: isTrendingSelected ? i.title :  i.name,
-                                        releaseDate: isTrendingSelected ? i.releaseDate :  i.fistAirDate,
-                                        movieId: i.id,isTrailerIdNull: true, backDropPath: i.backdropPath,language: i.originalLanguage,
-                                        posterPath: i.posterPath, voteAverage: i.voteAverage, overView: i.overview,
-                                      );
-                                    }));
-                                  }
+                                          movieId: i.id,trailerId: i.trailerId,
+                                          isTrailerIdNull: false, backDropPath: i.backdropPath,language: i.originalLanguage,
+                                          posterPath: i.posterPath,
+                                          voteAverage: i.voteAverage, overView: i.overview,
+                                        );
+                                      }));
+                                    }else{
+                                      ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
+                                      Navigator.push(context, MaterialPageRoute(builder: (context){
+                                        return DetailsScreen(isMovieModel: true,
+                                          title: isTrendingSelected ? i.title :  i.name,
+                                          releaseDate: isTrendingSelected ? i.releaseDate :  i.fistAirDate,
+                                          movieId: i.id,isTrailerIdNull: true, backDropPath: i.backdropPath,language: i.originalLanguage,
+                                          posterPath: i.posterPath, voteAverage: i.voteAverage, overView: i.overview,
+                                        );
+                                      }));
+                                    }
                                 },
                                 child: Stack(
                                   alignment: Alignment.bottomLeft,
@@ -393,6 +395,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       GestureDetector(
                         onTap : () async{
+                          await homeScreenBloc.checkInternetConnection();
                           await castListRepository.fetchCastsList(popularMovies.id);
                           List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
                           if(trailerId != null && trailerId.isNotEmpty){
@@ -521,7 +524,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-  StreamBuilder<List<MoviesPaginationList>> buildTopRatedMovies({Size screenSize, Stream stream, ThemeData theme} ){
+  StreamBuilder<List<MoviesPaginationList>> buildTopRatedMovies({Size screenSize, Stream stream, ThemeData theme,bool hasConnection} ){
     return StreamBuilder(
         stream: stream,
         builder: (context, snapshot){
@@ -541,6 +544,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       GestureDetector(
                         onTap : () async{
+                          await homeScreenBloc.checkInternetConnection();
                           await castListRepository.fetchCastsList(popularMovies.id);
                           List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
                           if(trailerId != null && trailerId.isNotEmpty){
