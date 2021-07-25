@@ -1,5 +1,7 @@
 
 
+const int kCooldownShort_ms = 1200;
+
 class ScreenName {
   static const String SplashScreen = "SplashScreen";
   static const String LoginScreen = "LoginScreen";

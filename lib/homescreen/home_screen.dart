@@ -17,6 +17,7 @@ import 'package:movie_watchlist_app/bloc/bloc_collection.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
 import 'package:movie_watchlist_app/utilities/constants.dart';
 import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
+import 'package:tap_debouncer/tap_debouncer.dart';
 
 FirebaseAuth auth = FirebaseAuth.instance;
 
@@ -285,9 +286,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         builder: (BuildContext context) {
                           return Stack(
                             children: [
-                              GestureDetector(
-                                onTap : () async{
-                                  await homeScreenBloc.checkInternetConnection();
+                              TapDebouncer(
+                                  onTap: () async {
+                                    await homeScreenBloc.checkInternetConnection();
                                     await castListRepository.fetchCastsList(i.id);
                                     List<Trailer> trailerId = await trailerListRepository.fetchTrailers(i.id);
                                     if(trailerId != null && trailerId.isNotEmpty){
@@ -313,46 +314,50 @@ class _HomeScreenState extends State<HomeScreen> {
                                         );
                                       }));
                                     }
-                                },
-                                child: Stack(
-                                  alignment: Alignment.bottomLeft,
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(15),
-                                      child: CachedNetworkImage(
-                                        width: MediaQuery.of(context).size.width,
-                                        imageUrl: '${ApiConstants.BASE_IMAGE_URL}${i.posterPath}',
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    Container(
-                                      foregroundDecoration: BoxDecoration(
-                                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                                        gradient: LinearGradient(
-                                          colors: [Colors.black54, Colors.transparent, Colors.transparent, Colors.black54],
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          stops: [0, 0.25, 0.75, 1],
+                                  },
+                                  builder: (BuildContext context, TapDebouncerFunc onTap){
+                                    return GestureDetector(
+                                      onTap: onTap,
+                                      child: Stack(
+                                      alignment: Alignment.bottomLeft,
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(15),
+                                          child: CachedNetworkImage(
+                                            width: MediaQuery.of(context).size.width,
+                                            imageUrl: '${ApiConstants.BASE_IMAGE_URL}${i.posterPath}',
+                                            fit: BoxFit.cover,
+                                          ),
                                         ),
-                                      ),
+                                        Container(
+                                          foregroundDecoration: BoxDecoration(
+                                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                                            gradient: LinearGradient(
+                                              colors: [Colors.black54, Colors.transparent, Colors.transparent, Colors.black54],
+                                              begin: Alignment.topCenter,
+                                              end: Alignment.bottomCenter,
+                                              stops: [0, 0.25, 0.75, 1],
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.only(
+                                            bottom: 15,
+                                            left: 15,
+                                          ),
+                                          child: Text(
+                                            isTrendingSelected ? i.title ?? ""  : i.name ?? "",
+                                            style: theme.textTheme.subtitle2.copyWith(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold ,
+                                                color: AppColors.white),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                        bottom: 15,
-                                        left: 15,
-                                      ),
-                                      child: Text(
-                                        isTrendingSelected ? i.title ?? ""  : i.name ?? "",
-                                        style: theme.textTheme.subtitle2.copyWith(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold ,
-                                            color: AppColors.white),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                                    );
+                                  }),
                             ]
                           );
                         },
@@ -393,127 +398,131 @@ class _HomeScreenState extends State<HomeScreen> {
                  MoviesPaginationList popularMovies = movies[index];
                   return Stack(
                     children: [
-                      GestureDetector(
-                        onTap : () async{
-                          await homeScreenBloc.checkInternetConnection();
-                          await castListRepository.fetchCastsList(popularMovies.id);
-                          List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
-                          if(trailerId != null && trailerId.isNotEmpty){
-                            popularMovies.trailerId = trailerId.first.key;
-                            Navigator.push(context, MaterialPageRoute(builder: (context){
-                              return DetailsScreen(isMovieModel: false,
+                      TapDebouncer(
+                          onTap: () async{
+                            await homeScreenBloc.checkInternetConnection();
+                            await castListRepository.fetchCastsList(popularMovies.id);
+                            List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
+                            if(trailerId != null && trailerId.isNotEmpty){
+                              popularMovies.trailerId = trailerId.first.key;
+                              Navigator.push(context, MaterialPageRoute(builder: (context){
+                                return DetailsScreen(isMovieModel: false,
                                   title: popularMovies.title,
                                   releaseDate: popularMovies.releaseDate,
                                   movieId: popularMovies.id,trailerId: popularMovies.trailerId,
                                   isTrailerIdNull: false, backDropPath:popularMovies.backdropPath,language: popularMovies.originalLanguage,
                                   posterPath: popularMovies.posterPath,
                                   voteAverage: popularMovies.voteAverage, overView: popularMovies.overview,
-                              );
-                            }));
-                          }else{
-                            ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
-                            Navigator.push(context, MaterialPageRoute(builder: (context){
-                              return DetailsScreen(
-                                isMovieModel: false,movieId: popularMovies.id,isTrailerIdNull: true,
-                                title: popularMovies.title,
-                                releaseDate: popularMovies.releaseDate,
-                                backDropPath:popularMovies.backdropPath,language: popularMovies.originalLanguage,
-                                posterPath: popularMovies.posterPath,
-                                voteAverage: popularMovies.voteAverage, overView: popularMovies.overview,
-                              );
-                            }));
-                          }
+                                );
+                              }));
+                            }else{
+                              ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
+                              Navigator.push(context, MaterialPageRoute(builder: (context){
+                                return DetailsScreen(
+                                  isMovieModel: false,movieId: popularMovies.id,isTrailerIdNull: true,
+                                  title: popularMovies.title,
+                                  releaseDate: popularMovies.releaseDate,
+                                  backDropPath:popularMovies.backdropPath,language: popularMovies.originalLanguage,
+                                  posterPath: popularMovies.posterPath,
+                                  voteAverage: popularMovies.voteAverage, overView: popularMovies.overview,
+                                );
+                              }));
+                            }
 
-                        },
-                        child: Stack(
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(
-                                  screenSize.width * 0.025, 0.0, 0.0, 0.0),
+                          },
+                          builder: (BuildContext context, TapDebouncerFunc onTap){
+                           return GestureDetector(
+                              onTap : onTap,
                               child: Stack(
-                                alignment: Alignment.bottomLeft,
-                                children: <Widget>[
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                        child: Card(
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10),
-                                          ),
-                                          elevation: 3,
-                                          child: ClipRRect(
-                                            child: CachedNetworkImage(
-                                              imageUrl: 'https://image.tmdb.org/t/p/w200${popularMovies.posterPath}',
-                                              imageBuilder: (context, imageProvider) {
-                                                return Container(
-                                                  width: screenSize.width / 2.5,
-                                                  decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(10),
-                                                  ),
-                                                    image: DecorationImage(
-                                                      image: imageProvider,
-                                                      fit: BoxFit.cover,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.fromLTRB(
+                                        screenSize.width * 0.025, 0.0, 0.0, 0.0),
+                                    child: Stack(
+                                      alignment: Alignment.bottomLeft,
+                                      children: <Widget>[
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: Card(
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                elevation: 3,
+                                                child: ClipRRect(
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: 'https://image.tmdb.org/t/p/w200${popularMovies.posterPath}',
+                                                    imageBuilder: (context, imageProvider) {
+                                                      return Container(
+                                                        width: screenSize.width / 2.5,
+                                                        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(10),
+                                                        ),
+                                                          image: DecorationImage(
+                                                            image: imageProvider,
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                    placeholder: (context, url) => Container(
+                                                      width: screenSize.width / 2.5,
+                                                      child: Center(
+                                                        child: Platform.isAndroid
+                                                            ? CircularProgressIndicator()
+                                                            : CupertinoActivityIndicator(),
+                                                      ),
+                                                    ),
+                                                    errorWidget: (context, url, error) => Container(
+                                                      width: screenSize.width / 2.5,
+                                                      decoration:
+                                                      BoxDecoration(image: DecorationImage(
+                                                        image: AssetImage('assets/images/img_not_found.jpg'),
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                      ),
                                                     ),
                                                   ),
-                                                );
-                                              },
-                                              placeholder: (context, url) => Container(
-                                                width: screenSize.width / 2.5,
-                                                child: Center(
-                                                  child: Platform.isAndroid
-                                                      ? CircularProgressIndicator()
-                                                      : CupertinoActivityIndicator(),
-                                                ),
-                                              ),
-                                              errorWidget: (context, url, error) => Container(
-                                                width: screenSize.width / 2.5,
-                                                decoration:
-                                                BoxDecoration(image: DecorationImage(
-                                                  image: AssetImage('assets/images/img_not_found.jpg'),
-                                                  fit: BoxFit.cover,
-                                                ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        width: screenSize.width / 2.5,
-                                        child: Text(
-                                          //person.name
-                                          popularMovies.title ?? "",
-                                          style: theme.textTheme.subtitle1.copyWith(
-                                            fontWeight:  FontWeight.w500,
-                                            color:  AppColors.secondWhite,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      Row(
-                                        children: [
-                                          Icon(Icons.star, color: AppColors.yellow,
-                                            size: 18.0,
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.only(left: 5.0),
-                                            child: Text(
-                                              // person//     .knowForDepartment
-                                              popularMovies.voteAverage.toString(),
-                                              style: theme.textTheme.subtitle2.copyWith(
-                                                  fontWeight:  FontWeight.w400,
-                                                  color:  AppColors.secondWhite),
+                                            Container(
+                                              width: screenSize.width / 2.5,
+                                              child: Text(
+                                                //person.name
+                                                popularMovies.title ?? "",
+                                                style: theme.textTheme.subtitle1.copyWith(
+                                                  fontWeight:  FontWeight.w500,
+                                                  color:  AppColors.secondWhite,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                            Row(
+                                              children: [
+                                                Icon(Icons.star, color: AppColors.yellow,
+                                                  size: 18.0,
+                                                ),
+                                                Container(
+                                                  padding: EdgeInsets.only(left: 5.0),
+                                                  child: Text(
+                                                    // person//     .knowForDepartment
+                                                    popularMovies.voteAverage.toString(),
+                                                    style: theme.textTheme.subtitle2.copyWith(
+                                                        fontWeight:  FontWeight.w400,
+                                                        color:  AppColors.secondWhite),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
+                            );
+                          }),
                     ],
                   );
                }
@@ -542,127 +551,131 @@ class _HomeScreenState extends State<HomeScreen> {
                  MoviesPaginationList popularMovies = movies[index];
                   return Stack(
                     children: [
-                      GestureDetector(
-                        onTap : () async{
-                          await homeScreenBloc.checkInternetConnection();
-                          await castListRepository.fetchCastsList(popularMovies.id);
-                          List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
-                          if(trailerId != null && trailerId.isNotEmpty){
-                            popularMovies.trailerId = trailerId.first.key;
-                            Navigator.push(context, MaterialPageRoute(builder: (context){
-                              return DetailsScreen(
-                                movieId: popularMovies.id,trailerId: popularMovies.trailerId,isTrailerIdNull: false,
-                                title: popularMovies.title,
-                                releaseDate: popularMovies.releaseDate,
-                                backDropPath:popularMovies.backdropPath,language: popularMovies.originalLanguage,
-                                posterPath: popularMovies.posterPath,
-                                voteAverage: popularMovies.voteAverage, overView: popularMovies.overview,
-                              );
-                            }));
-                          }else{
-                            ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
-                            Navigator.push(context, MaterialPageRoute(builder: (context){
-                              return DetailsScreen(
-                                trailerId: "",
-                                isMovieModel: false,movieId: popularMovies.id,isTrailerIdNull: true,
-                                title: popularMovies.title,
-                                releaseDate: popularMovies.releaseDate,
-                                backDropPath:popularMovies.backdropPath,language: popularMovies.originalLanguage,
-                                posterPath: popularMovies.posterPath,
-                                voteAverage: popularMovies.voteAverage, overView: popularMovies.overview,
-                              );
-                            }));
-                          }
 
-                        },
-                        child: Stack(
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(
-                                  screenSize.width * 0.025, 0.0, 0.0, 0.0),
+                      TapDebouncer(
+                          onTap:  () async{
+                            await homeScreenBloc.checkInternetConnection();
+                            await castListRepository.fetchCastsList(popularMovies.id);
+                            List<Trailer> trailerId = await trailerListRepository.fetchTrailers(popularMovies.id);
+                            if(trailerId != null && trailerId.isNotEmpty){
+                              popularMovies.trailerId = trailerId.first.key;
+                              Navigator.push(context, MaterialPageRoute(builder: (context){
+                                return DetailsScreen(
+                                  movieId: popularMovies.id,trailerId: popularMovies.trailerId,isTrailerIdNull: false,
+                                  title: popularMovies.title,
+                                  releaseDate: popularMovies.releaseDate,
+                                  backDropPath:popularMovies.backdropPath,language: popularMovies.originalLanguage,
+                                  posterPath: popularMovies.posterPath,
+                                  voteAverage: popularMovies.voteAverage, overView: popularMovies.overview,
+                                );
+                              }));
+                            }else{
+                              ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
+                              Navigator.push(context, MaterialPageRoute(builder: (context){
+                                return DetailsScreen(
+                                  trailerId: "",
+                                  isMovieModel: false,movieId: popularMovies.id,isTrailerIdNull: true,
+                                  title: popularMovies.title,
+                                  releaseDate: popularMovies.releaseDate,
+                                  backDropPath:popularMovies.backdropPath,language: popularMovies.originalLanguage,
+                                  posterPath: popularMovies.posterPath,
+                                  voteAverage: popularMovies.voteAverage, overView: popularMovies.overview,
+                                );
+                              }));
+                            }
+
+                          },
+                          builder: (BuildContext context, TapDebouncerFunc onTap){
+                            return GestureDetector(
                               child: Stack(
-                                alignment: Alignment.bottomLeft,
-                                children: <Widget>[
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                        child: Card(
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10),
-                                          ),
-                                          elevation: 3,
-                                          child: ClipRRect(
-                                            child: CachedNetworkImage(
-                                              imageUrl: 'https://image.tmdb.org/t/p/w200${popularMovies.posterPath}',
-                                              imageBuilder: (context, imageProvider) {
-                                                return Container(
-                                                  width: screenSize.width / 2.5,
-                                                  decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(10),
-                                                  ),
-                                                    image: DecorationImage(
-                                                      image: imageProvider,
-                                                      fit: BoxFit.cover,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.fromLTRB(
+                                        screenSize.width * 0.025, 0.0, 0.0, 0.0),
+                                    child: Stack(
+                                      alignment: Alignment.bottomLeft,
+                                      children: <Widget>[
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: Card(
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                elevation: 3,
+                                                child: ClipRRect(
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: 'https://image.tmdb.org/t/p/w200${popularMovies.posterPath}',
+                                                    imageBuilder: (context, imageProvider) {
+                                                      return Container(
+                                                        width: screenSize.width / 2.5,
+                                                        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(10),
+                                                        ),
+                                                          image: DecorationImage(
+                                                            image: imageProvider,
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                    placeholder: (context, url) => Container(
+                                                      width: screenSize.width / 2.5,
+                                                      child: Center(
+                                                        child: Platform.isAndroid
+                                                            ? CircularProgressIndicator()
+                                                            : CupertinoActivityIndicator(),
+                                                      ),
+                                                    ),
+                                                    errorWidget: (context, url, error) => Container(
+                                                      width: screenSize.width / 2.5,
+                                                      decoration:
+                                                      BoxDecoration(image: DecorationImage(
+                                                        image: AssetImage('assets/images/img_not_found.jpg'),
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                      ),
                                                     ),
                                                   ),
-                                                );
-                                              },
-                                              placeholder: (context, url) => Container(
-                                                width: screenSize.width / 2.5,
-                                                child: Center(
-                                                  child: Platform.isAndroid
-                                                      ? CircularProgressIndicator()
-                                                      : CupertinoActivityIndicator(),
-                                                ),
-                                              ),
-                                              errorWidget: (context, url, error) => Container(
-                                                width: screenSize.width / 2.5,
-                                                decoration:
-                                                BoxDecoration(image: DecorationImage(
-                                                  image: AssetImage('assets/images/img_not_found.jpg'),
-                                                  fit: BoxFit.cover,
-                                                ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        width: screenSize.width / 2.5,
-                                        child: Text(
-                                          //person.name
-                                          popularMovies.title ?? "",
-                                          style: theme.textTheme.subtitle1.copyWith(
-                                            fontWeight:  FontWeight.w500,
-                                            color:  AppColors.secondWhite,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      Row(
-                                        children: [
-                                          Icon(Icons.star, color: AppColors.yellow,
-                                            size: 18.0,
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.only(left: 5.0),
-                                            child: Text(
-                                              popularMovies.voteAverage.toString(),
-                                              style: theme.textTheme.subtitle2.copyWith(
-                                                  fontWeight:  FontWeight.w400,
-                                                  color:  AppColors.secondWhite),
+                                            Container(
+                                              width: screenSize.width / 2.5,
+                                              child: Text(
+                                                //person.name
+                                                popularMovies.title ?? "",
+                                                style: theme.textTheme.subtitle1.copyWith(
+                                                  fontWeight:  FontWeight.w500,
+                                                  color:  AppColors.secondWhite,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                            Row(
+                                              children: [
+                                                Icon(Icons.star, color: AppColors.yellow,
+                                                  size: 18.0,
+                                                ),
+                                                Container(
+                                                  padding: EdgeInsets.only(left: 5.0),
+                                                  child: Text(
+                                                    popularMovies.voteAverage.toString(),
+                                                    style: theme.textTheme.subtitle2.copyWith(
+                                                        fontWeight:  FontWeight.w400,
+                                                        color:  AppColors.secondWhite),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
+                            );
+                          })
                     ],
                   );
                }

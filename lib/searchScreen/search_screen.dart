@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:movie_watchlist_app/bloc/bloc_collection.dart';
@@ -10,6 +8,7 @@ import 'package:movie_watchlist_app/data/repo/detailsrepo/fetch_trailer.dart';
 import 'package:movie_watchlist_app/detailsscreen/details_screen.dart';
 import 'package:movie_watchlist_app/utilities/colors.dart';
 import 'package:movie_watchlist_app/widgets/snack_bar_widget.dart';
+import 'package:tap_debouncer/tap_debouncer.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen();
@@ -136,103 +135,108 @@ class _SearchScreenState extends State<SearchScreen> {
                                   ),
                                 ),
                               ),
-                              GestureDetector(
-                                onTap: () async{
-                                  await castListRepository.fetchCastsList(movie.id);
-                                  List<Trailer> trailerId = await trailerListRepository.fetchTrailers(movie.id);
-                                  if(trailerId.isNotEmpty){
-                                    movie.trailerId = trailerId.first.key;
-                                    Navigator.push(context, MaterialPageRoute(builder: (context){
-                                      return DetailsScreen(isMovieModel: false,movieId: movie.id,trailerId: movie.trailerId,
-                                        isTrailerIdNull: false, backDropPath: movie.backdropPath,language: movie.originalLanguage,
-                                        title: movie.title, releaseDate: movie.releaseDate, posterPath: movie.posterPath,
-                                        voteAverage: movie.voteAverage, overView: movie.overview,
-                                      );
-                                    }));
-                                  }else{
-                                    ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
-                                    Navigator.push(context, MaterialPageRoute(builder: (context){
-                                      return DetailsScreen(isMovieModel: false,movieId: movie.id,
-                                        isTrailerIdNull: true, backDropPath: movie.backdropPath,language: movie.originalLanguage,
-                                        title: movie.title, releaseDate: movie.releaseDate, posterPath: movie.posterPath,
-                                        voteAverage: movie.voteAverage, overView: movie.overview,);
-                                    }));
-                                  }
-                                },
-                                child: Stack(
-                                    children: [
-                                      Row(
-                                          crossAxisAlignment: CrossAxisAlignment.end,
+
+                              TapDebouncer(
+                                  onTap: () async {
+                                    await castListRepository.fetchCastsList(movie.id);
+                                    List<Trailer> trailerId = await trailerListRepository.fetchTrailers(movie.id);
+                                    if(trailerId.isNotEmpty){
+                                      movie.trailerId = trailerId.first.key;
+                                      Navigator.push(context, MaterialPageRoute(builder: (context){
+                                        return DetailsScreen(isMovieModel: false,movieId: movie.id,trailerId: movie.trailerId,
+                                          isTrailerIdNull: false, backDropPath: movie.backdropPath,language: movie.originalLanguage,
+                                          title: movie.title, releaseDate: movie.releaseDate, posterPath: movie.posterPath,
+                                          voteAverage: movie.voteAverage, overView: movie.overview,
+                                        );
+                                      }));
+                                    }else{
+                                      ScaffoldMessenger.of(context).showSnackBar(customSnackBarWidget(text: "Cant play Trailer"));
+                                      Navigator.push(context, MaterialPageRoute(builder: (context){
+                                        return DetailsScreen(isMovieModel: false,movieId: movie.id,
+                                          isTrailerIdNull: true, backDropPath: movie.backdropPath,language: movie.originalLanguage,
+                                          title: movie.title, releaseDate: movie.releaseDate, posterPath: movie.posterPath,
+                                          voteAverage: movie.voteAverage, overView: movie.overview,);
+                                      }));
+                                    }
+                                  },
+                                  builder: (BuildContext context, TapDebouncerFunc onTap){
+                                    return GestureDetector(
+                                      onTap: onTap,
+                                      child: Stack(
                                           children: [
-                                            Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  screenSize.width * 0.045,
-                                                  screenSize.height * 0.04,
-                                                  screenSize.width * 0.025,
-                                                  2.0),
-                                              child: ClipRRect(
-                                                borderRadius: BorderRadius.circular(15),
-                                                child: CachedNetworkImage(
-                                                  height: screenSize.height / 4.5,
-                                                  width: screenSize.width / 3,
-                                                  imageUrl: "https://image.tmdb.org/t/p/w200${movie.posterPath}",
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: Padding(
-                                                padding: EdgeInsets.only(right:screenSize.width * 0.15,),
-                                                child: Column(
-                                                  mainAxisAlignment: MainAxisAlignment.start,
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      movie.title,
-                                                      //  popularMovies.voteAverage.toString(),
-                                                      style: theme.textTheme.subtitle1,
-                                                      overflow: TextOverflow.ellipsis,
+                                            Row(
+                                                crossAxisAlignment: CrossAxisAlignment.end,
+                                                children: [
+                                                  Padding(
+                                                    padding: EdgeInsets.fromLTRB(
+                                                        screenSize.width * 0.045,
+                                                        screenSize.height * 0.04,
+                                                        screenSize.width * 0.025,
+                                                        2.0),
+                                                    child: ClipRRect(
+                                                      borderRadius: BorderRadius.circular(15),
+                                                      child: CachedNetworkImage(
+                                                        height: screenSize.height / 4.5,
+                                                        width: screenSize.width / 3,
+                                                        imageUrl: "https://image.tmdb.org/t/p/w200${movie.posterPath}",
+                                                        fit: BoxFit.cover,
+                                                      ),
                                                     ),
-                                                    Text(
-                                                      movie.releaseDate,
-                                                      //  popularMovies.voteAverage.toString(),
-                                                      style: theme.textTheme.subtitle2,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                    SizedBox(height: screenSize.height * 0.01),
-                                                    Text(
-                                                      movie.overview,
-                                                      style: theme.textTheme.bodyText1,
-                                                      textAlign: TextAlign.left,
-                                                      maxLines: 2,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                    SizedBox(height: screenSize.height * 0.012),
-                                                    Row(
-                                                      children: [
-                                                        Icon(Icons.star, color: AppColors.yellow,
-                                                          size: 18.0,
-                                                        ),
-                                                        Container(
-                                                          padding: EdgeInsets.only(left: 5.0),
-                                                          child: Text(
-                                                            movie.voteAverage.toString(),
-                                                            style: theme.textTheme.subtitle2.copyWith(
-                                                                color:  AppColors.secondWhite),
+                                                  ),
+                                                  Expanded(
+                                                    child: Padding(
+                                                      padding: EdgeInsets.only(right:screenSize.width * 0.15,),
+                                                      child: Column(
+                                                        mainAxisAlignment: MainAxisAlignment.start,
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Text(
+                                                            movie.title,
+                                                            //  popularMovies.voteAverage.toString(),
+                                                            style: theme.textTheme.subtitle1,
+                                                            overflow: TextOverflow.ellipsis,
                                                           ),
-                                                        ),
-                                                      ],
+                                                          Text(
+                                                            movie.releaseDate,
+                                                            //  popularMovies.voteAverage.toString(),
+                                                            style: theme.textTheme.subtitle2,
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                          SizedBox(height: screenSize.height * 0.01),
+                                                          Text(
+                                                            movie.overview,
+                                                            style: theme.textTheme.bodyText1,
+                                                            textAlign: TextAlign.left,
+                                                            maxLines: 2,
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                          SizedBox(height: screenSize.height * 0.012),
+                                                          Row(
+                                                            children: [
+                                                              Icon(Icons.star, color: AppColors.yellow,
+                                                                size: 18.0,
+                                                              ),
+                                                              Container(
+                                                                padding: EdgeInsets.only(left: 5.0),
+                                                                child: Text(
+                                                                  movie.voteAverage.toString(),
+                                                                  style: theme.textTheme.subtitle2.copyWith(
+                                                                      color:  AppColors.secondWhite),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          SizedBox(height: screenSize.height * 0.02),
+                                                        ],
+                                                      ),
                                                     ),
-                                                    SizedBox(height: screenSize.height * 0.02),
-                                                  ],
-                                                ),
-                                              ),
+                                                  ),
+                                                ]
                                             ),
                                           ]
                                       ),
-                                    ]
-                                ),
-                              ),
+                                    );
+                                  }),
                             ]
                         ),
                       ],
