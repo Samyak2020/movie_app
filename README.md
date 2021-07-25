@@ -1,16 +1,21 @@
-# movie_watchlist_app
+# Movie WatchList
 
-A new Flutter application.
+A Flutter application to keep a track of latest and hottest movies out right now.
+Learn about the movie you want to watch,search for a movie you heard about,
+watch trailer, watchlist them and revist them even if you dont have access to the internet.
 
-## Getting Started
+# Tech's used:
+* Firebase authentication
+* API provided by TMBD at https://developers.themoviedb.org/3/getting-started/introduction
+* SQFlite for offline data storage 
+* BLOC pattern for State Management
 
-This project is a starting point for a Flutter application.
+# ScreenShots
+![Ss-1](https://user-images.githubusercontent.com/57345214/126890985-cfa9b6a0-b961-496d-87be-a19e3713885f.jpg)
+![ss-2](https://user-images.githubusercontent.com/57345214/126890990-7d1f11ec-1299-47cc-8f6f-c56fb9422b12.jpg)
 
-A few resources to get you started if this is your first Flutter project:
+# Working Gif
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+![android-emulator-pixel-4-xl-api-30-5554-2021-07-25-13-05-28_P60ffKu2](https://user-images.githubusercontent.com/57345214/126891771-067efc5c-4746-4566-8f01-f2dc0630ed0e.gif)
+![android-emulator-pixel-4-xl-api-30-5554-2021-07-25-13-08-18_nBh6ZOFk](https://user-images.githubusercontent.com/57345214/126891774-d2a03e48-9ecf-40b7-969e-5d9406a08e67.gif)
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
