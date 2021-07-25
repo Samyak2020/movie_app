@@ -11,12 +11,8 @@ watch trailer, watchlist them and revist them even if you dont have access to th
 * BLOC patter for State Management
 
 # ScreenShots
-![LoginScreen](https://user-images.githubusercontent.com/57345214/126889509-d2c10611-c9d6-415a-ba64-63546b68268f.png)
-![HomeScreen](https://user-images.githubusercontent.com/57345214/126889512-30ac09ed-19ff-455d-b25a-982fd05c5579.png)
-![Drawer](https://user-images.githubusercontent.com/57345214/126889520-70d5c8c5-0e52-44a5-84b1-2c07906a1f61.png)
-![DetailsScreen](https://user-images.githubusercontent.com/57345214/126889522-595b8161-7a21-4fbf-981d-91cac0539b0d.png)
-![SearchScreen](https://user-images.githubusercontent.com/57345214/126889523-6bfb52a5-9bcd-408c-bd79-c72abfbc4af3.png)
-![WatchListScree](https://user-images.githubusercontent.com/57345214/126889524-5529940a-4558-4988-8aec-42bd825dae9b.png)
-![NoInternetSCreen](https://user-images.githubusercontent.com/57345214/126889539-9f223fb5-4cfa-4cbc-abee-92042bba2825.png)
+![Ss-1](https://user-images.githubusercontent.com/57345214/126890985-cfa9b6a0-b961-496d-87be-a19e3713885f.jpg)
+![ss-2](https://user-images.githubusercontent.com/57345214/126890990-7d1f11ec-1299-47cc-8f6f-c56fb9422b12.jpg)
+
 
 
